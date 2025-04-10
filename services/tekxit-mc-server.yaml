@@ -98,6 +98,7 @@ services:
       EULA: "TRUE"
       TYPE: "FABRIC"
       VERSION: "1.19.2"
+      BROADCAST_RCON_TO_OPS: "false"
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
       INIT_MEMORY: "4096M"
