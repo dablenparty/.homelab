@@ -98,21 +98,21 @@ services:
       EULA: "TRUE"
       TYPE: "FABRIC"
       VERSION: "1.19.2"
-      INIT_MEMORY: "4096M"
-      MAX_MEMORY: "8192M"
-      MOTD: "Tekxit for us :)"
-      USE_AIKAR_FLAGS: "true"
-      TZ: "America/New_York"
-      LEVEL: ${WORLD_DIR}
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
-      RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
-      # doesn't auto-start server
-      SETUP_ONLY: "true"
-      VIEW_DISTANCE: 16
-      WHITELIST: |
-        ${OWNER_PLAYER_NAME}
+      INIT_MEMORY: "4096M"
+      LEVEL: ${WORLD_DIR}
+      MAX_MEMORY: "8192M"
+      MOTD: "Tekxit for us :)"
       OPS: |
+        ${OWNER_PLAYER_NAME}
+      RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
+      # disables auto-starting server
+      SETUP_ONLY: "true"
+      TZ: "America/New_York"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: ${VIEW_DISTANCE:-16}
+      WHITELIST: |
         ${OWNER_PLAYER_NAME}
     volumes:
       - ${MC_DATA_VOLUME}:/data
