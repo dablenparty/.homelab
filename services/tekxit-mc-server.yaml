@@ -1,0 +1,120 @@
+# Lazymc requires that the minecraft server have a static IP.
+#
+# To ensure that our servers have a static IP we need to create
+# a network for our services to use.
+#
+# By default, Docker uses 172.17.0.0/16 subnet range.
+# So we need to create a new network in a different subnet
+# See the readme for more information.
+#
+# Please ensure that the subnet falls within the private CIDRs:
+# https://datatracker.ietf.org/doc/html/rfc1918#section-3
+#
+# And that it is not in use by anything else.
+networks:
+  minecraft-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+
+services:
+  lazymc:
+    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    depends_on:
+      mc:
+        condition: service_started
+    networks:
+      minecraft-network:
+        ipv4_address: 172.22.0.2
+    restart: unless-stopped
+    volumes:
+      - ${MC_DATA_VOLUME}:/server:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "25565:25565"
+
+  # if this service keeps failing, make sure the server parent dir is owned by user 1000, not root
+  restore-backup:
+    image: itzg/mc-backup
+    user: "1000"
+    restart: no
+    entrypoint: restore-tar-backup
+    volumes:
+      - ${MC_DATA_VOLUME}:/data
+      - ${MC_BACKUP_VOLUME}:/backups:ro
+
+  mc-backup:
+    image: itzg/mc-backup
+    user: "1000"
+    restart: unless-stopped
+    networks:
+      minecraft-network:
+        ipv4_address: 172.22.0.4
+    environment:
+      BACKUP_INTERVAL: 6h
+      BACKUP_ON_STARTUP: true
+      EXCLUDES: cache,logs,*.tmp
+      INITIAL_DELAY: 120
+      PRUNE_BACKUP_DAYS: 21
+      RCON_HOST: 172.22.0.3
+      RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
+      RCON_PORT: 25575
+      # infinite
+      RCON_RETRIES: -1
+      RCON_RETRY_INTERVAL: 30s
+    volumes:
+      - ${MC_DATA_VOLUME}:/data:ro
+      - ${MC_BACKUP_VOLUME}:/backups
+
+  mc:
+    image: itzg/minecraft-server:java17
+    user: "1000"
+    tty: true
+    stdin_open: true
+    networks:
+      minecraft-network:
+        ipv4_address: 172.22.0.3
+    # handled by lazymc
+    restart: no
+    depends_on:
+      restore-backup:
+        condition: service_completed_successfully
+    labels:
+      # Enable lazymc on this container
+      - lazymc.enabled=true
+      # Required to find the container to manage it
+      - lazymc.group=mc
+      # Point to the server address of the Minecraft server (must be accessible from container)
+      - lazymc.server.address=mc:25565
+      # The minecraft client version
+      - lazymc.public.version=1.19.2
+      # https://minecraft.fandom.com/wiki/Protocol_version#Java_Edition_2
+      - lazymc.public.protocol=760
+      # Only wakes the server if the player is whitelisted
+      - lazymc.server.wake_whitelist=true
+      # defaults to 120 seconds (2 minutes)
+      - lazymc.time.minimum_online_time=${LAZYMC_MIN_ONLINE_TIME:-120}
+      # defaults to 600 seconds (10 minutes)
+      - lazymc.time.sleep_after=${LAZYMC_SLEEP_AFTER:-600}
+    environment:
+      EULA: "TRUE"
+      TYPE: "FABRIC"
+      VERSION: "1.19.2"
+      INIT_MEMORY: "4096M"
+      MAX_MEMORY: "8192M"
+      MOTD: "Tekxit for us :)"
+      USE_AIKAR_FLAGS: "true"
+      TZ: "America/New_York"
+      LEVEL: "saves/home is where the heart is"
+      DIFFICULTY: "2"
+      ENABLE_COMMAND_BLOCK: "true"
+      RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
+      VIEW_DISTANCE: 16
+      WHITELIST: |
+        ${OWNER_PLAYER_NAME}
+      OPS: |
+        ${OWNER_PLAYER_NAME}
+    volumes:
+      - ${MC_DATA_VOLUME}:/data
+
