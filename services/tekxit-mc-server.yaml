@@ -106,7 +106,7 @@ services:
       MOTD: "Tekxit for us :)"
       USE_AIKAR_FLAGS: "true"
       TZ: "America/New_York"
-      LEVEL: "saves/home is where the heart is"
+      LEVEL: ${WORLD_DIR}
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
       RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
