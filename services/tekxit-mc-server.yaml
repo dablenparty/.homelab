@@ -21,9 +21,6 @@ networks:
 services:
   lazymc:
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
-    depends_on:
-      mc:
-        condition: service_started
     networks:
       minecraft-network:
         ipv4_address: 172.22.0.2
@@ -110,6 +107,8 @@ services:
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
       RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
+      # doesn't auto-start server
+      SETUP_ONLY: "true"
       VIEW_DISTANCE: 16
       WHITELIST: |
         ${OWNER_PLAYER_NAME}
