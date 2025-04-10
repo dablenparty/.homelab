@@ -108,8 +108,6 @@ services:
       OPS: |
         ${OWNER_PLAYER_NAME}
       RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
-      # disables auto-starting server
-      SETUP_ONLY: "true"
       TZ: "America/New_York"
       USE_AIKAR_FLAGS: "true"
       VIEW_DISTANCE: ${VIEW_DISTANCE:-16}
