@@ -60,6 +60,7 @@ services:
       # infinite
       RCON_RETRIES: -1
       RCON_RETRY_INTERVAL: 30s
+      TZ: "America/New_York"
     volumes:
       - ${MC_DATA_VOLUME}:/data:ro
       - ${MC_BACKUP_VOLUME}:/backups
