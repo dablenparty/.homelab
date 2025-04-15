@@ -7,16 +7,11 @@ services:
       - PUID=1000
       - TZ=Etc/US
     hostname: syncthing
-    ports:
-      - 8384:8384
-      - 22000:22000/tcp
-      - 22000:22000/udp
-      - 21027:21027/udp
     restart: unless-stopped
     volumes:
       - ${CONFIG_DIR}:/config
       - ${DATA_DIR}:/DATA
-    network_mode: bridge
+    network_mode: host
     privileged: false
     healthcheck:
       test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
