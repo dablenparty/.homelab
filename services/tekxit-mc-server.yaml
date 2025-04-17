@@ -49,7 +49,7 @@ services:
       minecraft-network:
         ipv4_address: 172.22.0.4
     environment:
-      BACKUP_INTERVAL: 6h
+      BACKUP_INTERVAL: ${BACKUP_INTERVAL:-6h}
       BACKUP_ON_STARTUP: true
       EXCLUDES: cache,logs,*.tmp
       INITIAL_DELAY: 120
