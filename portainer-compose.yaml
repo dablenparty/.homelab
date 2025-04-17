@@ -9,7 +9,10 @@ services:
       - 9443:9443
     restart: unless-stopped
     volumes:
-      - /DATA/AppData/portainer:/data
+      - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     network_mode: bridge
     privileged: false
+
+volumes:
+  portainer_data: { }
