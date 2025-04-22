@@ -1,0 +1,7 @@
+services:
+  cloudflared:
+    restart: unless-stopped
+    image: cloudflare/cloudflared:latest
+    entrypoint: cloudflared --no-autoupdate
+    command: tunnel --no-autoupdate run --token $TOKEN
+    network_mode: host
