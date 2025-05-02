@@ -1,7 +1,8 @@
 services:
   cloudflared:
+    pull_policy: always
     restart: unless-stopped
     image: cloudflare/cloudflared:latest
-    entrypoint: cloudflared --no-autoupdate
+    entrypoint: cloudflared
     command: tunnel --no-autoupdate run --token $TOKEN
     network_mode: host
