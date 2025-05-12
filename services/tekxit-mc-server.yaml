@@ -104,7 +104,7 @@ services:
       ENABLE_COMMAND_BLOCK: "true"
       INIT_MEMORY: "4096M"
       LEVEL: ${WORLD_DIR}
-      MAX_MEMORY: "8192M"
+      MAX_MEMORY: "${MAX_MEMORY:-8192M}"
       MOTD: "Tekxit for us :)"
       OPS: |
         ${OWNER_PLAYER_NAME}
