@@ -25,6 +25,10 @@ services:
       minecraft-network:
         ipv4_address: 172.22.0.2
     restart: unless-stopped
+    # sometimes, lazymc doesn't stop the server on startup
+    depends_on:
+      mc:
+        condition: service_started
     volumes:
       - ${MC_DATA_VOLUME}:/server:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
