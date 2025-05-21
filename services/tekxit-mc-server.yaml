@@ -106,8 +106,9 @@ services:
       BROADCAST_RCON_TO_OPS: "false"
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
-      INIT_MEMORY: "4096M"
       LEVEL: ${WORLD_DIR}
+      # NOTE: keep these the same when using Airkar's flags
+      INIT_MEMORY: "${INIT_MEMORY:-${MAX_MEMORY:-8192M}}"
       MAX_MEMORY: "${MAX_MEMORY:-8192M}"
       MOTD: "Tekxit for us :)"
       OPS: |
