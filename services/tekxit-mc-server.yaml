@@ -57,7 +57,8 @@ services:
       BACKUP_ON_STARTUP: true
       EXCLUDES: cache,logs,*.tmp
       INITIAL_DELAY: 120
-      PRUNE_BACKUPS_DAYS: ${PRUNE_BACKUPS_DAYS:-28}
+      # set to a positive number to enable
+      PRUNE_BACKUPS_DAYS: ${PRUNE_BACKUPS_DAYS:-0}
       RCON_HOST: 172.22.0.3
       RCON_PASSWORD: ${RCON_PASSWORD:-minecraft}
       RCON_PORT: 25575
