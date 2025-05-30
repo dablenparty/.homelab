@@ -1,3 +1,5 @@
+version: '3.7'
+
 networks:
   searxng:
     driver: bridge
@@ -16,10 +18,10 @@ services:
     volumes:
       - valkey-data2:/data
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: '1m'
+        max-file: '1'
 
   searxng:
     container_name: searxng
@@ -28,7 +30,7 @@ services:
     networks:
       - searxng
     ports:
-      - "127.0.0.1:8180:8080"
+      - '127.0.0.1:8180:8080'
     volumes:
       - ./config:/etc/searxng:rw
       - ./docker-init.sh:/docker-entrypoint-initdb.d/init.sh
@@ -37,7 +39,7 @@ services:
       - UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
       - UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: '1m'
+        max-file: '1'
