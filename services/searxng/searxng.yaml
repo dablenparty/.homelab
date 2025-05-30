@@ -36,9 +36,9 @@ services:
       - '127.0.0.1:8180:8080'
     volumes:
       - ./config:/etc/searxng:rw
-      - ./docker-init.sh:/docker-entrypoint-initdb.d/init.sh
     environment:
       - SEARXNG_BASE_URL=https://${SEARXNG_HOSTNAME:?SEARXNG_HOSTNAME is not set}/
+      - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}
       - UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
       - UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
     logging:
