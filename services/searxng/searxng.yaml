@@ -1,4 +1,7 @@
-version: '3.7'
+# NOTE: this file does not work in Portainer.
+# It keeps complaining about "Top-level object must be mapping"
+# but the same file copy-pasted into the web editor works with no
+# issue. Just run this manually.
 
 networks:
   searxng:
