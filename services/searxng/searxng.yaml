@@ -1,3 +1,10 @@
+networks:
+  searxng:
+    driver: bridge
+
+volumes:
+  valkey-data2: {}
+
 services:
   redis:
     container_name: redis
@@ -34,9 +41,3 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
-
-networks:
-  searxng:
-
-volumes:
-  valkey-data2:
