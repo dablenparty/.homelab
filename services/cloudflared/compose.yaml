@@ -1,0 +1,16 @@
+secrets:
+  cf-tunnel-token:
+    file: ./secrets/cf-tunnel-token
+
+services:
+  cloudflared:
+    pull_policy: always
+    restart: unless-stopped
+    image: cloudflare/cloudflared:latest
+    entrypoint: cloudflared
+    command: tunnel --no-autoupdate run
+    secrets:
+      - cf-tunnel-token
+    environment:
+      TUNNEL_TOKEN_FILE: /run/secrets/cf-tunnel-token
+    network_mode: host
