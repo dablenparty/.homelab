@@ -7,8 +7,20 @@ services:
       - PUID=1000
       - TZ=Etc/US
     hostname: syncthing
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.searxng.entrypoints: http
+      traefik.http.routers.searxng.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.middlewares.searxng-https-redirect.redirectscheme.scheme: https
+      traefik.http.routers.searxng.middlewares: searxng-https-redirect
+      traefik.http.routers.searxng-secure.entrypoints: https
+      traefik.http.routers.searxng-secure.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.searxng-secure.tls: true
+      traefik.http.routers.searxng-secure.tls.certresolver: cloudflare
+      traefik.http.routers.searxng-secure.service: searxng
+      traefik.http.services.searxng.loadbalancer.server.port: 8384
     ports:
-      - 8384:8384
       - 22000:22000/tcp
       - 22000:22000/udp
       - 21027:21027/udp
