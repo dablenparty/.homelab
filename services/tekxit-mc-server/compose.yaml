@@ -91,21 +91,21 @@ services:
         condition: service_completed_successfully
     labels:
       # Enable lazymc on this container
-      - lazymc.enabled=true
+      lazymc.enabled: true
       # Required to find the container to manage it
-      - lazymc.group=mc
+      lazymc.group: mc
       # Point to the server address of the Minecraft server (must be accessible from container)
-      - lazymc.server.address=mc:${MC_PORT:-25565}
+      lazymc.server.address: mc:${MC_PORT:-25565}
       # The minecraft client version
-      - lazymc.public.version=1.19.2
+      lazymc.public.version: 1.19.2
       # https://minecraft.fandom.com/wiki/Protocol_version#Java_Edition_2
-      - lazymc.public.protocol=760
+      lazymc.public.protocol: 760
       # Only wakes the server if the player is whitelisted
-      - lazymc.server.wake_whitelist=true
+      lazymc.server.wake_whitelist: true
       # defaults to 120 seconds (2 minutes)
-      - lazymc.time.minimum_online_time=${LAZYMC_MIN_ONLINE_TIME:-120}
+      lazymc.time.minimum_online_time: ${LAZYMC_MIN_ONLINE_TIME:-120}
       # defaults to 600 seconds (10 minutes)
-      - lazymc.time.sleep_after=${LAZYMC_SLEEP_AFTER:-600}
+      lazymc.time.sleep_after: ${LAZYMC_SLEEP_AFTER:-600}
     secrets:
       - rcon-passwd
     environment:
