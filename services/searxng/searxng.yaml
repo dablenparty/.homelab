@@ -6,6 +6,8 @@
 networks:
   searxng:
     driver: bridge
+  traefik-proxy:
+    external: true
 
 volumes:
   valkey-data2: {}
@@ -31,13 +33,25 @@ services:
     image: docker.io/searxng/searxng:latest
     restart: unless-stopped
     networks:
+      - traefik-proxy
       - searxng
-    ports:
-      - '127.0.0.1:8180:8080'
     volumes:
       - ./config:/etc/searxng:rw
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.searxng.entrypoints=http"
+      - "traefik.http.routers.searxng.rule=Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)"
+      - "traefik.http.middlewares.searxng-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.searxng.middlewares=searxng-https-redirect"
+      - "traefik.http.routers.searxng-secure.entrypoints=https"
+      - "traefik.http.routers.searxng-secure.rule=Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)"
+      - "traefik.http.routers.searxng-secure.tls=true"
+      - "traefik.http.routers.searxng-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.searxng-secure.service=searxng"
+      - "traefik.http.services.searxng.loadbalancer.server.port=8080"
     environment:
-      - SEARXNG_BASE_URL=https://${SEARXNG_HOSTNAME:?SEARXNG_HOSTNAME is not set}/
+      - SEARXNG_BASE_URL=https://searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}/
       - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}
       - UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
       - UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
