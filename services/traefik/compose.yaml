@@ -25,10 +25,6 @@ services:
       - cf-tunnel-token
     environment:
       TUNNEL_TOKEN_FILE: /run/secrets/cf-tunnel-token
-    # network_mode: host
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
     networks:
       - cloudflared
       - traefik-proxy
@@ -55,15 +51,13 @@ services:
       # - CF_DNS_API_TOKEN=YOUR-TOKEN # Cloudflare API Token
       - CF_API_EMAIL_FILE=/run/secrets/cf-api-email
       - CF_DNS_API_TOKEN_FILE=/run/secrets/cf-api-token # see https://doc.traefik.io/traefik/https/acme/#providers
-      # token file is the proper way to do it
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - ./config/acme.json:/etc/traefik/acme.json
       - ./config/config.yaml:/etc/traefik/config.yaml:ro
-      # WARN: you probably don't want this in prod
-      - ./config/logs:/var/log/traefik
+      - ./logs:/var/log/traefik
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-proxy"
