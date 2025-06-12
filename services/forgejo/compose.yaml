@@ -1,6 +1,8 @@
 networks:
-  forgejo:
-    external: false
+  cloudflared:
+    external: true
+  traefik-proxy:
+    external: true
 
 services:
   server:
@@ -21,12 +23,25 @@ services:
 
       # required for SSH cloning to work
       - FORGEJO__server__SSH_DOMAIN=${SSH_DOMAIN}
-      - FORGEJO__server__ROOT_URL=${ROOT_URL:?ROOT_URL is not set}
+      - FORGEJO__server__ROOT_URL=https://forgejo.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.forgejo.entrypoints=http"
+      - "traefik.http.routers.forgejo.rule=Host(`forgejo.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)"
+      - "traefik.http.middlewares.forgejo-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.forgejo.middlewares=forgejo-https-redirect"
+      - "traefik.http.routers.forgejo-secure.entrypoints=https"
+      - "traefik.http.routers.forgejo-secure.rule=Host(`forgejo.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)"
+      - "traefik.http.routers.forgejo-secure.tls=true"
+      - "traefik.http.routers.forgejo-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.forgejo-secure.service=forgejo"
+      - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
     networks:
-      - forgejo
-    ports:
-      - "127.0.0.1:${FORGEJO_PORT:-3300}:3000"
-      - "127.0.0.1:${SSH_PORT:-2221}:22"
+      # for ssh
+      - cloudflared
+      # for https
+      - traefik-proxy
     volumes:
       - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
       - /etc/timezone:/etc/timezone:ro
