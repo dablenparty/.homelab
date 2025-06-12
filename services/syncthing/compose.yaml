@@ -1,3 +1,7 @@
+networks:
+  traefik-proxy:
+    external: true
+
 services:
   syncthing:
     image: linuxserver/syncthing:latest
@@ -10,16 +14,16 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
-      traefik.http.routers.searxng.entrypoints: http
-      traefik.http.routers.searxng.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.middlewares.searxng-https-redirect.redirectscheme.scheme: https
-      traefik.http.routers.searxng.middlewares: searxng-https-redirect
-      traefik.http.routers.searxng-secure.entrypoints: https
-      traefik.http.routers.searxng-secure.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.searxng-secure.tls: true
-      traefik.http.routers.searxng-secure.tls.certresolver: cloudflare
-      traefik.http.routers.searxng-secure.service: searxng
-      traefik.http.services.searxng.loadbalancer.server.port: 8384
+      traefik.http.routers.syncthing.entrypoints: http
+      traefik.http.routers.syncthing.rule: Host(`syncthing.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.middlewares.syncthing-https-redirect.redirectscheme.scheme: https
+      traefik.http.routers.syncthing.middlewares: syncthing-https-redirect
+      traefik.http.routers.syncthing-secure.entrypoints: https
+      traefik.http.routers.syncthing-secure.rule: Host(`syncthing.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.syncthing-secure.tls: true
+      traefik.http.routers.syncthing-secure.tls.certresolver: cloudflare
+      traefik.http.routers.syncthing-secure.service: syncthing
+      traefik.http.services.syncthing.loadbalancer.server.port: 8384
     ports:
       - 22000:22000/tcp
       - 22000:22000/udp
@@ -28,7 +32,8 @@ services:
     volumes:
       - ${CONFIG_DIR}:/config
       - ${DATA_DIR}:/DATA
-    network_mode: bridge
+    networks:
+      - traefik-proxy
     privileged: false
     healthcheck:
       test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
