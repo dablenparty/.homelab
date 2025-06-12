@@ -21,6 +21,8 @@ services:
     image: cloudflare/cloudflared:latest
     entrypoint: cloudflared
     command: tunnel --no-autoupdate run
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     secrets:
       - cf-tunnel-token
     environment:
