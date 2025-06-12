@@ -115,7 +115,7 @@ services:
       BROADCAST_RCON_TO_OPS: "false"
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
-      LEVEL: ${WORLD_DIR}
+      LEVEL: ${WORLD_DIR:?WORLD_DIR is not set}
       # NOTE: keep these the same when using Airkar's flags
       INIT_MEMORY: "${INIT_MEMORY:-${MAX_MEMORY:-8192M}}"
       MAX_MEMORY: "${MAX_MEMORY:-8192M}"
