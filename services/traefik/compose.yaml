@@ -31,9 +31,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./config/traefik.yaml:/traefik.yaml:ro
-      - ./config/acme.json:/acme.json
-      - ./config/config.yaml:/config.yaml:ro
+      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./config/acme.json:/etc/traefik/acme.json
+      - ./config/config.yaml:/etc/traefik/config.yaml:ro
       # WARN: you probably don't want this in prod
       - ./config/logs:/var/log/traefik
     labels:
