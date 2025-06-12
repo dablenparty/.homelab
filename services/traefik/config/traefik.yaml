@@ -11,10 +11,6 @@ entryPoints:
           scheme: https
   https:
     address: ":443"
-  mc-java:
-    address: ":25565"
-  mc-java-query:
-    address: ":25565/udp"
 serversTransport:
   insecureSkipVerify: true
 providers:
