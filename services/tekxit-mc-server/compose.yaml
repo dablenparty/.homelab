@@ -34,7 +34,7 @@ services:
       mc:
         condition: service_started
     volumes:
-      - ${MC_DATA_VOLUME}:/server:ro
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/server:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "25565:${MC_PORT:-25565}"
@@ -46,8 +46,8 @@ services:
     restart: no
     entrypoint: restore-tar-backup
     volumes:
-      - ${MC_DATA_VOLUME}:/data
-      - ${MC_BACKUP_VOLUME}:/backups:ro
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data
+      - ${MC_BACKUP_VOLUME:?MC_BACKUP_VOLUME is not set}:/backups:ro
 
   mc-backup:
     image: itzg/mc-backup
@@ -73,8 +73,8 @@ services:
       RCON_RETRY_INTERVAL: 30s
       TZ: "America/New_York"
     volumes:
-      - ${MC_DATA_VOLUME}:/data:ro
-      - ${MC_BACKUP_VOLUME}:/backups
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data:ro
+      - ${MC_BACKUP_VOLUME:?MC_BACKUP_VOLUME is not set}:/backups
 
   mc:
     image: itzg/minecraft-server:java17
@@ -121,12 +121,12 @@ services:
       MAX_MEMORY: "${MAX_MEMORY:-8192M}"
       MOTD: "Tekxit for us :)"
       OPS: |
-        ${OWNER_PLAYER_NAME}
+        ${OWNER_PLAYER_NAME:?OWNER_PLAYER_NAME is not set}
       RCON_PASSWORD_FILE: /run/secrets/rcon-passwd
       TZ: "America/New_York"
       USE_AIKAR_FLAGS: "true"
       VIEW_DISTANCE: ${VIEW_DISTANCE:-16}
       WHITELIST: |
-        ${OWNER_PLAYER_NAME}
+        ${OWNER_PLAYER_NAME:?OWNER_PLAYER_NAME is not set}
     volumes:
-      - ${MC_DATA_VOLUME}:/data
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data
