@@ -39,6 +39,8 @@ services:
     volumes:
       - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/server:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 25565:${MC_PORT:-25565}
 
   # if this service keeps failing, make sure the server parent dir is owned by user 1000, not root
   restore-backup:
