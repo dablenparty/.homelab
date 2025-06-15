@@ -1,0 +1,79 @@
+secrets:
+  cf-api-email:
+    file: ./secrets/cf-api-email
+  cf-api-token:
+    file: ./secrets/cf-api-token
+  cf-tunnel-token:
+    file: ./secrets/cf-tunnel-token
+
+networks:
+  traefik-proxy:
+    # prevent name mangling
+    name: traefik-proxy
+  cloudflared:
+    name: cloudflared
+
+services:
+  cloudflared:
+    container_name: cloudflared
+    pull_policy: always
+    restart: unless-stopped
+    image: cloudflare/cloudflared:latest
+    entrypoint: cloudflared
+    command: tunnel --no-autoupdate run
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    secrets:
+      - cf-tunnel-token
+    environment:
+      TUNNEL_TOKEN_FILE: /run/secrets/cf-tunnel-token
+    networks:
+      - cloudflared
+      - traefik-proxy
+
+  traefik:
+    image: traefik:3.4
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true # helps to increase security
+    secrets:
+      - cf-api-email
+      - cf-api-token # the secret at the top of this file
+    env_file:
+      - .env # store other secrets e.g., dashboard password
+    networks:
+      - traefik-proxy
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - TRAEFIK_DASHBOARD_CREDENTIALS=${TRAEFIK_DASHBOARD_CREDENTIALS:?TRAEFIK_DASHBOARD_CREDENTIALS not set}
+      # - CF_API_EMAIL=your@email.com # Cloudflare email
+      # - CF_DNS_API_TOKEN=YOUR-TOKEN # Cloudflare API Token
+      - CF_API_EMAIL_FILE=/run/secrets/cf-api-email
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf-api-token # see https://doc.traefik.io/traefik/https/acme/#providers
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./config/acme.json:/etc/traefik/acme.json
+      - ./config/config.yaml:/etc/traefik/config.yaml:ro
+      - ./logs:/var/log/traefik
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.traefik.entrypoints: http
+      traefik.http.routers.traefik.rule: Host(`traefik.${BASE_DOMAIN:?BASE_DOMAIN not set}`)
+      traefik.http.middlewares.traefik-auth.basicauth.users: ${TRAEFIK_DASHBOARD_CREDENTIALS:?TRAEFIK_DASHBOARD_CREDENTIALS not set}
+      traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: https
+      traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto: https
+      traefik.http.routers.traefik.middlewares: traefik-https-redirect
+      traefik.http.routers.traefik-secure.entrypoints: https
+      traefik.http.routers.traefik-secure.rule: Host(`traefik.${BASE_DOMAIN:?BASE_DOMAIN not set}`)
+      traefik.http.routers.traefik-secure.middlewares: traefik-auth
+      traefik.http.routers.traefik-secure.tls: true
+      traefik.http.routers.traefik-secure.tls.certresolver: cloudflare
+      traefik.http.routers.traefik-secure.tls.domains[0].main: ${BASE_DOMAIN:?BASE_DOMAIN not set}
+      traefik.http.routers.traefik-secure.tls.domains[0].sans: '*.${BASE_DOMAIN:?BASE_DOMAIN not set}'
+      traefik.http.routers.traefik-secure.service: api@internal

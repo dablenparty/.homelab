@@ -12,6 +12,8 @@
 #
 # And that it is not in use by anything else.
 networks:
+  cloudflared:
+    external: true
   minecraft-network:
     driver: bridge
     ipam:
@@ -26,6 +28,7 @@ services:
   lazymc:
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     networks:
+      cloudflared: {}
       minecraft-network:
         ipv4_address: 172.22.0.2
     restart: unless-stopped
@@ -34,10 +37,10 @@ services:
       mc:
         condition: service_started
     volumes:
-      - ${MC_DATA_VOLUME}:/server:ro
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/server:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - "25565:${MC_PORT:-25565}"
+      - 25565:${MC_PORT:-25565}
 
   # if this service keeps failing, make sure the server parent dir is owned by user 1000, not root
   restore-backup:
@@ -46,8 +49,8 @@ services:
     restart: no
     entrypoint: restore-tar-backup
     volumes:
-      - ${MC_DATA_VOLUME}:/data
-      - ${MC_BACKUP_VOLUME}:/backups:ro
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data
+      - ${MC_BACKUP_VOLUME:?MC_BACKUP_VOLUME is not set}:/backups:ro
 
   mc-backup:
     image: itzg/mc-backup
@@ -73,8 +76,8 @@ services:
       RCON_RETRY_INTERVAL: 30s
       TZ: "America/New_York"
     volumes:
-      - ${MC_DATA_VOLUME}:/data:ro
-      - ${MC_BACKUP_VOLUME}:/backups
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data:ro
+      - ${MC_BACKUP_VOLUME:?MC_BACKUP_VOLUME is not set}:/backups
 
   mc:
     image: itzg/minecraft-server:java17
@@ -91,21 +94,21 @@ services:
         condition: service_completed_successfully
     labels:
       # Enable lazymc on this container
-      - lazymc.enabled=true
+      lazymc.enabled: true
       # Required to find the container to manage it
-      - lazymc.group=mc
+      lazymc.group: mc
       # Point to the server address of the Minecraft server (must be accessible from container)
-      - lazymc.server.address=mc:${MC_PORT:-25565}
+      lazymc.server.address: mc:${MC_PORT:-25565}
       # The minecraft client version
-      - lazymc.public.version=1.19.2
+      lazymc.public.version: 1.19.2
       # https://minecraft.fandom.com/wiki/Protocol_version#Java_Edition_2
-      - lazymc.public.protocol=760
+      lazymc.public.protocol: 760
       # Only wakes the server if the player is whitelisted
-      - lazymc.server.wake_whitelist=true
+      lazymc.server.wake_whitelist: true
       # defaults to 120 seconds (2 minutes)
-      - lazymc.time.minimum_online_time=${LAZYMC_MIN_ONLINE_TIME:-120}
+      lazymc.time.minimum_online_time: ${LAZYMC_MIN_ONLINE_TIME:-120}
       # defaults to 600 seconds (10 minutes)
-      - lazymc.time.sleep_after=${LAZYMC_SLEEP_AFTER:-600}
+      lazymc.time.sleep_after: ${LAZYMC_SLEEP_AFTER:-600}
     secrets:
       - rcon-passwd
     environment:
@@ -115,18 +118,18 @@ services:
       BROADCAST_RCON_TO_OPS: "false"
       DIFFICULTY: "2"
       ENABLE_COMMAND_BLOCK: "true"
-      LEVEL: ${WORLD_DIR}
+      LEVEL: ${WORLD_DIR:?WORLD_DIR is not set}
       # NOTE: keep these the same when using Airkar's flags
       INIT_MEMORY: "${INIT_MEMORY:-${MAX_MEMORY:-8192M}}"
       MAX_MEMORY: "${MAX_MEMORY:-8192M}"
       MOTD: "Tekxit for us :)"
       OPS: |
-        ${OWNER_PLAYER_NAME}
+        ${OWNER_PLAYER_NAME:?OWNER_PLAYER_NAME is not set}
       RCON_PASSWORD_FILE: /run/secrets/rcon-passwd
       TZ: "America/New_York"
       USE_AIKAR_FLAGS: "true"
       VIEW_DISTANCE: ${VIEW_DISTANCE:-16}
       WHITELIST: |
-        ${OWNER_PLAYER_NAME}
+        ${OWNER_PLAYER_NAME:?OWNER_PLAYER_NAME is not set}
     volumes:
-      - ${MC_DATA_VOLUME}:/data
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data
