@@ -37,6 +37,8 @@ services:
       traefik.http.routers.forgejo-secure.tls.certresolver: cloudflare
       traefik.http.routers.forgejo-secure.service: forgejo
       traefik.http.services.forgejo.loadbalancer.server.port: 3000
+    ports:
+      - "127.0.0.1:2221:22"
     networks:
       # for ssh
       - cloudflared
