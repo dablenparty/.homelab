@@ -1,0 +1,36 @@
+networks:
+  traefik-proxy:
+    external: true
+
+services:
+  adguard-home:
+    image: adguard/adguardhome
+    container_name: adguard-home
+    hostname: adguard
+    networks:
+      - traefik-proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.adguard-home.entrypoints: http
+      traefik.http.routers.adguard-home.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.middlewares.adguard-home-https-redirect.redirectscheme.scheme: https
+      traefik.http.routers.adguard-home.middlewares: adguard-home-https-redirect
+      traefik.http.routers.adguard-home-secure.entrypoints: https
+      traefik.http.routers.adguard-home-secure.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.adguard-home-secure.tls: true
+      traefik.http.routers.adguard-home-secure.tls.certresolver: cloudflare
+      traefik.http.routers.adguard-home-secure.service: adguard-home
+      traefik.http.services.adguard-home.loadbalancer.server.port: 3000
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      # handled by traefik
+      # NOTE: make sure to set admin web UI port to the traefik load balancer port in setup!
+      # - 80:80/tcp
+      # - 443:443/tcp
+      # - 443:443/udp
+      # - 3000:3000/tcp
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./config:/opt/adguardhome/conf
