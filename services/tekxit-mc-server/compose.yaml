@@ -61,6 +61,8 @@ services:
     environment:
       BACKUP_INTERVAL: ${BACKUP_INTERVAL:-6h}
       BACKUP_ON_STARTUP: true
+      BACKUP_METHOD: tar
+      TAR_COMPRESS_METHOD: zstd
       EXCLUDES: cache,logs,*.tmp
       INITIAL_DELAY: 120
       # set to a positive number to enable
