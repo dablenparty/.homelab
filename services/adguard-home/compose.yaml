@@ -6,6 +6,7 @@ services:
   adguard-home:
     image: adguard/adguardhome
     container_name: adguard-home
+    restart: unless-stopped
     hostname: adguard
     networks:
       - traefik-proxy
@@ -22,6 +23,11 @@ services:
       traefik.http.routers.adguard-home-secure.tls.certresolver: cloudflare
       traefik.http.routers.adguard-home-secure.service: adguard-home
       traefik.http.services.adguard-home.loadbalancer.server.port: 3000
+
+      traefik.http.routers.adguard-doh.entrypoints: https
+      traefik.http.routers.adguard-doh.tls: true
+      traefik.http.routers.adguard-doh.service: adguard-doh
+      traefik.http.services.adguard-doh.loadbalancer.server.url: "https://adguard-home.${TRAEFIK_BASE_DOMAIN}/dns-query"
     ports:
       - 53:53/tcp
       - 53:53/udp
