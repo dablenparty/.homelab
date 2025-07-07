@@ -2,12 +2,22 @@ networks:
   traefik-proxy:
     external: true
 
+secrets:
+  le-cert:
+    file: ../traefik/certs/couchlab.me-cert.pem
+  le-key:
+    file: ../traefik/certs/couchlab.me-key.pem
+
 services:
   adguard-home:
     image: adguard/adguardhome
     container_name: adguard-home
     restart: unless-stopped
     hostname: adguard
+    # NOTE: enable these in Encryption settings or by manually editing the config
+    secrets:
+      - le-cert
+      - le-key
     networks:
       - traefik-proxy
     labels:
@@ -24,6 +34,8 @@ services:
       traefik.http.routers.adguard-home-secure.service: adguard-home
       traefik.http.services.adguard-home.loadbalancer.server.port: 3000
 
+      # DNS over HTTPS
+      # NOTE: enable allow_unencrypted_doh in config
       traefik.http.routers.adguard-doh.entrypoints: https
       traefik.http.routers.adguard-doh.tls: true
       traefik.http.routers.adguard-doh.service: adguard-doh
