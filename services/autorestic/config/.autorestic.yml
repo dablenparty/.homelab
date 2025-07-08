@@ -20,6 +20,17 @@ global:
 
 
 locations:
+  adguard-home:
+    from: /mnt/HomelabStorage/adguardhome
+    to: homelab-storage
+    # top of every hour
+    cron: '0 * * * *'
+    # auto-prune
+    forget: prune
+    options:
+      backup:
+        tag:
+          - essential
   forgejo:
     from: /mnt/HomelabStorage/forgejo
     to: homelab-storage
