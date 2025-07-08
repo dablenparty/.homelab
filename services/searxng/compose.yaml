@@ -10,6 +10,7 @@ networks:
     external: true
 
 volumes:
+  searxng-data: {}
   valkey-data2: {}
 
 services:
@@ -37,6 +38,7 @@ services:
       - searxng
     volumes:
       - ./config:/etc/searxng:rw
+      - searxng-data:/var/cache/searxng:rw
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
@@ -53,8 +55,6 @@ services:
     environment:
       - SEARXNG_BASE_URL=https://searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}/
       - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}
-      - UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
-      - UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
     logging:
       driver: 'json-file'
       options:
