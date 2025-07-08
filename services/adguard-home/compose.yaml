@@ -74,5 +74,5 @@ services:
       # - 443:443/udp
       # - 3000:3000/tcp
     volumes:
-      - ./work:/opt/adguardhome/work
-      - ./config:/opt/adguardhome/conf
+      - ${ADGUARD_DIR:?ADGUARD_DIR is not set}/work:/opt/adguardhome/work
+      - ${ADGUARD_DIR:?ADGUARD_DIR is not set}/config:/opt/adguardhome/conf
