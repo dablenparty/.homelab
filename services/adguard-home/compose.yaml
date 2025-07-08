@@ -23,10 +23,13 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
+
       traefik.http.routers.adguard-home.entrypoints: http
       traefik.http.routers.adguard-home.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.adguard-home.service: adguard-home
       traefik.http.middlewares.adguard-home-https-redirect.redirectscheme.scheme: https
       traefik.http.routers.adguard-home.middlewares: adguard-home-https-redirect
+
       traefik.http.routers.adguard-home-secure.entrypoints: https
       traefik.http.routers.adguard-home-secure.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
       traefik.http.routers.adguard-home-secure.tls: true
@@ -40,7 +43,20 @@ services:
       traefik.http.routers.adguard-doh.tls: true
       traefik.http.routers.adguard-doh.service: adguard-doh
       traefik.http.services.adguard-doh.loadbalancer.server.url: "https://adguard-home.${TRAEFIK_BASE_DOMAIN}/dns-query"
+
+      # DNS over TLS
+      traefik.tcp.routers.adguard-dot.entrypoints: dot-tcp
+      traefik.tcp.routers.adguard-dot.rule: HostSNI(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.tcp.routers.adguard-dot.tls: true
+      traefik.tcp.routers.adguard-dot.service: adguard-dot
+      traefik.tcp.services.adguard-dot.loadbalancer.server.port: 53
+
+      # DNS over QUIC
+      traefik.udp.routers.adguard-dot.entrypoints: dot-udp
+      traefik.udp.routers.adguard-dot.service: adguard-dot
+      traefik.udp.services.adguard-dot.loadbalancer.server.port: 53
     ports:
+      # DNS
       - 53:53/tcp
       - 53:53/udp
       # handled by traefik
