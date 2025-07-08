@@ -62,6 +62,8 @@ services:
     ports:
       - 80:80
       - 443:443
+      - 853:853/tcp
+      - 853:853/udp
     environment:
       - TRAEFIK_DASHBOARD_CREDENTIALS=${TRAEFIK_DASHBOARD_CREDENTIALS:?TRAEFIK_DASHBOARD_CREDENTIALS not set}
       # - CF_API_EMAIL=your@email.com # Cloudflare email
@@ -92,3 +94,5 @@ services:
       traefik.http.routers.traefik-secure.tls.domains[0].main: ${BASE_DOMAIN:?BASE_DOMAIN not set}
       traefik.http.routers.traefik-secure.tls.domains[0].sans: '*.${BASE_DOMAIN:?BASE_DOMAIN not set}'
       traefik.http.routers.traefik-secure.service: api@internal
+
+      traefik.tls.option.default.alpnProtocols: 'http/1.1,h2,dot'
