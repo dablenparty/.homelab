@@ -53,16 +53,16 @@ services:
       traefik.http.services.adguard-doh.loadbalancer.server.url: "https://adguard-home.${TRAEFIK_BASE_DOMAIN}/dns-query"
 
       # DNS over TLS
-      traefik.tcp.routers.adguard-dot.entrypoints: dot-tcp
+      traefik.tcp.routers.adguard-dot.entrypoints: dot
       traefik.tcp.routers.adguard-dot.rule: HostSNI(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
       traefik.tcp.routers.adguard-dot.tls: true
       traefik.tcp.routers.adguard-dot.service: adguard-dot
       traefik.tcp.services.adguard-dot.loadbalancer.server.port: 53
 
       # DNS over QUIC
-      traefik.udp.routers.adguard-dot.entrypoints: dot-udp
-      traefik.udp.routers.adguard-dot.service: adguard-dot
-      traefik.udp.services.adguard-dot.loadbalancer.server.port: 53
+      traefik.udp.routers.adguard-doq.entrypoints: doq
+      traefik.udp.routers.adguard-doq.service: adguard-doq
+      traefik.udp.services.adguard-doq.loadbalancer.server.port: 853
     ports:
       # DNS
       - 53:53/tcp
