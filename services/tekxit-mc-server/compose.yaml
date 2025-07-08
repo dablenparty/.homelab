@@ -88,6 +88,8 @@ services:
         ipv4_address: 172.22.0.3
     # handled by lazymc
     restart: no
+    ports:
+      - "127.0.0.1:25575:25575"
     depends_on:
       restore-backup:
         condition: service_completed_successfully
