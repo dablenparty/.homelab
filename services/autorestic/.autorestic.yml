@@ -23,9 +23,14 @@ locations:
   forgejo:
     from: /mnt/HomelabStorage/forgejo
     to: homelab-storage
+    # every half hour
     cron: '*/30 * * * *'
     # auto-prune
     forget: prune
+    options:
+      backup:
+        tag:
+          - essential
   # NOTE: testing this alongside docker-mc-backup
   tekxit-mc-server:
     hooks:
@@ -41,6 +46,7 @@ locations:
         - rcon-cli --password "$RCON_PASSWORD" save-on
     from: ~/Documents/minecraft/servers/Tekxit4 12.0
     to: homelab-storage
+    # top of every hour
     cron: '0 * * * *'
     forget: prune
     options:
