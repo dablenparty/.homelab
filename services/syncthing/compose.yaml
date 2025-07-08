@@ -4,7 +4,7 @@ networks:
 
 services:
   syncthing:
-    image: linuxserver/syncthing:latest
+    image: linuxserver/syncthing:1.30.0
     container_name: syncthing
     environment:
       - PGID=1000
