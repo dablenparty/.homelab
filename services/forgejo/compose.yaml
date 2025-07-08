@@ -9,6 +9,13 @@ services:
     image: codeberg.org/forgejo/forgejo:11
     container_name: forgejo-server
     restart: unless-stopped
+    healthcheck:
+      test: curl -fSs 127.0.0.1:3000/api/healthz
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 200s
+      start_interval: 5s
     environment:
       - USER_UID=${GIT_UID:?GIT_UID is not set to git user ID}
       - USER_GIT=${GIT_GID:?GIT_GID is not set to git group ID}

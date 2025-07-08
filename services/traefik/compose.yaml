@@ -21,12 +21,21 @@ services:
     image: cloudflare/cloudflared:latest
     entrypoint: cloudflared
     command: tunnel --no-autoupdate run
+    healthcheck:
+      # WARN: must use array syntax here, otherwise it won't work for some reason
+      test: [ "CMD", "cloudflared", "tunnel", "--metrics", "localhost:20241", "ready" ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+      start_interval: 10s
     extra_hosts:
       - "host.docker.internal:host-gateway"
     secrets:
       - cf-tunnel-token
     environment:
       TUNNEL_TOKEN_FILE: /run/secrets/cf-tunnel-token
+      TUNNEL_METRICS: 0.0.0.0:20241
     networks:
       - cloudflared
       - traefik-proxy
@@ -37,6 +46,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true # helps to increase security
+    healthcheck:
+      test: traefik healthcheck
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     secrets:
       - cf-api-email
       - cf-api-token # the secret at the top of this file

@@ -13,6 +13,8 @@ entryPoints:
     address: ":443"
 serversTransport:
   insecureSkipVerify: true
+ping:
+  entryPoint: traefik
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
