@@ -1,0 +1,7 @@
+[Unit]
+Description=autorestic cron service
+
+[Service]
+Type=oneshot
+ExecStart=autorestic --ci cron
+WorkingDirectory=%h

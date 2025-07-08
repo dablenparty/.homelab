@@ -1,0 +1,11 @@
+[Unit]
+Description=autorestic cron timer
+After=docker.service
+
+[Timer]
+# every fifth minute
+OnCalendar=*-*-* *:0/5:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

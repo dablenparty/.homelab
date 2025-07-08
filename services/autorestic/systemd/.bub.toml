@@ -1,0 +1,10 @@
+target = "/usr/lib/systemd/system"
+exclude = [
+    '\.unboxrc.*$',
+    '\.bub\.toml$',
+    '^\.git.*$',
+    "^(README|LICEN[CS]E|COPYING).*$",
+]
+include = []
+link_root = false
+link_type = "absolute"
