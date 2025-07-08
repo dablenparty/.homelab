@@ -37,13 +37,12 @@ locations:
       prevalidate:
         - command -v rcon-cli >/dev/null
       before:
-        - rcon-cli --password "$RCON_PASSWORD" save-off
-        - rcon-cli --password "$RCON_PASSWORD" save-all flush && sync
+        - (rcon-cli --password "$RCON_PASSWORD" save-off && rcon-cli --password "$RCON_PASSWORD" save-all flush) || echo "RCON failed, server not online"
       after:
-        - rcon-cli --password "$RCON_PASSWORD" save-on
+        - rcon-cli --password "$RCON_PASSWORD" save-on || echo "RCON failed, server not online"
       failure:
         - echo "Something went wrong"
-        - rcon-cli --password "$RCON_PASSWORD" save-on
+        - rcon-cli --password "$RCON_PASSWORD" save-on || echo "RCON failed, server not online"
     from: ~/Documents/minecraft/servers/Tekxit4 12.0
     to: homelab-storage
     # top of every hour
