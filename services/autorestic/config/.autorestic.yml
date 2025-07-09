@@ -7,8 +7,8 @@ global:
   forget:
     # always keep at least 10 snapshots
     keep-last: 10
-    # last 48 hours
-    keep-hourly: 48
+    # last 36 hours
+    keep-hourly: 36
     # last 14 days
     keep-daily: 14
     # lasy 6 weeks
