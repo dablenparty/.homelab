@@ -1,0 +1,30 @@
+networks:
+  traefik-proxy:
+    external: true
+
+services:
+  omni-tools:
+    image: iib0011/omni-tools:0.5.0
+    container_name: omni-tools
+    restart: unless-stopped
+    healthcheck:
+      test: 'curl --fail --insecure --location --silent --show-error http://localhost:80/'
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    networks:
+      - traefik-proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.omni-tools.entrypoints: http
+      traefik.http.routers.omni-tools.rule: Host(`omni-tools.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.middlewares.omni-tools-https-redirect.redirectscheme.scheme: https
+      traefik.http.routers.omni-tools.middlewares: omni-tools-https-redirect
+      traefik.http.routers.omni-tools-secure.entrypoints: https
+      traefik.http.routers.omni-tools-secure.rule: Host(`omni-tools.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.omni-tools-secure.tls: true
+      # traefik.http.routers.omni-tools-secure.tls.certresolver: cloudflare
+      traefik.http.routers.omni-tools-secure.service: omni-tools
+      traefik.http.services.omni-tools.loadbalancer.server.port: 80
