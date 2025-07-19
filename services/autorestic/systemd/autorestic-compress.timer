@@ -1,0 +1,11 @@
+[Unit]
+Description=autorestic compress timer
+After=autorestic-cron.timer
+
+[Timer]
+# at 4:44 AM every day
+OnCalendar=*-*-* 4:44:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=autorestic compress service
+
+[Service]
+Type=oneshot
+ExecStart=compress_autorestic_repo.sh
+# Create this file yourself
+EnvironmentFile=/usr/lib/systemd/system/autorestic-compress.env
+WorkingDirectory=%h
