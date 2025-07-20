@@ -1,14 +1,29 @@
+# Create a secret with:
+#
+#   openssl rand -hex 20
+#
+# NOTE: a token obtained from the Forgejo web interface cannot be used
+#       as a shared secret.
+
 networks:
+  forgejo-net:
+    driver: bridge
+    # required to prevent name mangling
+    name: forgejo-net
   cloudflared:
     external: true
   traefik-proxy:
     external: true
 
 services:
-  server:
+  forgejo-server:
     image: codeberg.org/forgejo/forgejo:12
     container_name: forgejo-server
+    hostname: forgejo-server
     restart: unless-stopped
+    # FIXME: this is a really awful way to wait for the server to start before registering the runner
+    command: >-
+      bash -c ' /usr/bin/s6-svscan /etc/s6 & sleep 10 ; su -c "forgejo forgejo-cli actions register --secret ${SHARED_SECRET}" git ; sleep infinity '
     healthcheck:
       test: curl -fSs 127.0.0.1:3000/api/healthz
       interval: 10s
@@ -17,20 +32,27 @@ services:
       start_period: 200s
       start_interval: 5s
     environment:
-      - USER_UID=${GIT_UID:?GIT_UID is not set to git user ID}
-      - USER_GIT=${GIT_GID:?GIT_GID is not set to git group ID}
+      USER_UID: ${GIT_UID:?GIT_UID is not set to git user ID}
+      USER_GID: ${GIT_GID:?GIT_GID is not set to git group ID}
 
-      - FORGEJO__database__DB_TYPE=sqlite3
+      FORGEJO__security__INSTALL_LOCK: true
+      # create new repos on push
+      FORGEJO__repository__ENABLE_PUSH_CREATE_USER: true
+      FORGEJO__repository__DEFAULT_PUSH_CREATE_PRIVATE: false
+      FORGEJO__repository_signing__DEFAULT_TRUST_MODEL: committer
+
+      FORGEJO__database__DB_TYPE: sqlite3
+      FORGEJO__database__SQLITE_JOURNAL_MODE: WAL
       # WARN: db path is inside container
-      - FORGEJO__database__PATH=/data/forgejo.db
-      - FORGEJO__openid___ENABLE_OPENID_SIGNIN=false
-      - FORGEJO__service__DISABLE_REGISTRATION=true
-      - FORGEJO__service__REQUIRE_SIGNIN_VIEW=true
-      - FORGEJO__ui__SHOW_USER_EMAIL=false
+      FORGEJO__database__PATH: /data/forgejo.db
+      FORGEJO__openid___ENABLE_OPENID_SIGNIN: false
+      FORGEJO__service__DISABLE_REGISTRATION: true
+      FORGEJO__service__REQUIRE_SIGNIN_VIEW: false
+      FORGEJO__ui__SHOW_USER_EMAIL: false
 
       # required for SSH cloning to work
-      - FORGEJO__server__SSH_DOMAIN=forgejo-ssh.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
-      - FORGEJO__server__ROOT_URL=https://forgejo.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
+      FORGEJO__server__SSH_DOMAIN: forgejo-ssh.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
+      FORGEJO__server__ROOT_URL: https://forgejo.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
@@ -47,6 +69,8 @@ services:
     ports:
       - "127.0.0.1:2221:22"
     networks:
+      # for actions
+      - forgejo-net
       # for ssh
       - cloudflared
       # for https
@@ -55,3 +79,41 @@ services:
       - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+
+  forgejo-runner-register:
+    image: code.forgejo.org/forgejo/runner:7.0.0
+    depends_on:
+      forgejo-server:
+        condition: service_healthy
+    networks:
+      - forgejo-net
+    volumes:
+      - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    user: 0:0
+    privileged: true
+    # TODO: extract a script because good lord
+    command: >-
+      bash -ec ' while : ; do
+        forgejo-runner create-runner-file --connect --instance http://forgejo-server:3000 --name runner --secret "${SHARED_SECRET}" && break ;
+        sleep 1 ;
+      done ; sed -i -e "s|\"labels\": null|\"labels\": [\"docker-cli:docker://code.forgejo.org/oci/docker:cli\",\"node-bookworm:docker://code.forgejo.org/oci/node:20-bookworm\"]|" .runner ; forgejo-runner generate-config > config.yml ; sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: unix:///var/run/docker.sock|" -e "s|network: .*|network: forgejo-net|" -e "s|  valid_volumes: \[\]$$|  valid_volumes:\n    - \"**\"|" -e "s|  docker_host: .*|  docker_host: \"unix:///var/run/docker.sock\"|" config.yml ; chown -R ${RUNNER_UID}:${RUNNER_GID} /data'
+
+  forgejo-runner-daemon:
+    container_name: forgejo-runner
+    image: code.forgejo.org/forgejo/runner:7.0.0
+    user: ${RUNNER_UID:?RUNNER_UID is not set}:${DOCKER_GID:?DOCKER_GID is not set}
+    restart: unless-stopped
+    depends_on:
+      forgejo-runner-register:
+        condition: service_completed_successfully
+    networks:
+      - forgejo-net
+    environment:
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # TODO: figure out why this is necessary on v7 and not v6
+    command: >-
+      bash -c ' while : ; do test -w .runner && forgejo-runner --config config.yml daemon ; sleep 1 ; done '
