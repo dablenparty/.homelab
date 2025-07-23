@@ -21,9 +21,6 @@ services:
     container_name: forgejo-server
     hostname: forgejo-server
     restart: unless-stopped
-    # FIXME: this is a really awful way to wait for the server to start before registering the runner
-    command: >-
-      bash -c ' /usr/bin/s6-svscan /etc/s6 & sleep 10 ; su -c "forgejo forgejo-cli actions register --secret ${SHARED_SECRET}" git ; sleep infinity '
     healthcheck:
       test: curl -fSs 127.0.0.1:3000/api/healthz
       interval: 10s
@@ -80,11 +77,30 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
-  forgejo-runner-register:
-    image: code.forgejo.org/forgejo/runner:7.0.0
+  forgejo-server-register:
+    image: codeberg.org/forgejo/forgejo:12
+    user: 0:0
+    privileged: true
+    networks:
+      - forgejo-net
     depends_on:
       forgejo-server:
         condition: service_healthy
+    environment:
+      USER_UID: ${GIT_UID:?GIT_UID is not set to git user ID}
+      USER_GID: ${GIT_GID:?GIT_GID is not set to git group ID}
+
+      FORGEJO__security__INSTALL_LOCK: true
+    volumes:
+      - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
+    command: >-
+      bash -c 'su -c "forgejo forgejo-cli actions register --secret ${SHARED_SECRET}" git'
+
+  forgejo-runner-register:
+    image: code.forgejo.org/forgejo/runner:7.0.0
+    depends_on:
+      forgejo-server-register:
+        condition: service_completed_successfully
     networks:
       - forgejo-net
     volumes:
@@ -94,10 +110,7 @@ services:
     privileged: true
     # TODO: extract a script because good lord
     command: >-
-      bash -ec ' while : ; do
-        forgejo-runner create-runner-file --connect --instance http://forgejo-server:3000 --name runner --secret "${SHARED_SECRET}" && break ;
-        sleep 1 ;
-      done ; sed -i -e "s|\"labels\": null|\"labels\": [\"docker-cli:docker://code.forgejo.org/oci/docker:cli\",\"docker:docker://code.forgejo.org/oci/node:20-bookworm\"]|" .runner ; forgejo-runner generate-config > config.yml ; sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: unix:///var/run/docker.sock|" -e "s|network: .*|network: forgejo-net|" -e "s|  valid_volumes: \[\]$$|  valid_volumes:\n    - \"**\"|" -e "s|  docker_host: .*|  docker_host: \"unix:///var/run/docker.sock\"|" config.yml ; chown -R ${RUNNER_UID}:${RUNNER_GID} /data'
+      bash -ec ' forgejo-runner create-runner-file --connect --instance http://forgejo-server:3000 --name runner --secret "${SHARED_SECRET}" ; sed -i -e "s|\"labels\": null|\"labels\": [\"docker-cli:docker://code.forgejo.org/oci/docker:cli\",\"docker:docker://code.forgejo.org/oci/node:20-bookworm\"]|" .runner ; forgejo-runner generate-config > config.yml ; sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: unix:///var/run/docker.sock|" -e "s|network: .*|network: forgejo-net|" -e "s|  valid_volumes: \[\]$$|  valid_volumes:\n    - \"**\"|" -e "s|  docker_host: .*|  docker_host: \"unix:///var/run/docker.sock\"|" config.yml ; chown -R ${RUNNER_UID}:${RUNNER_GID} /data'
 
   forgejo-runner-daemon:
     container_name: forgejo-runner
