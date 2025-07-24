@@ -10,7 +10,7 @@ fi
 # link adguardhome.conf
 system_resolved_d=/etc/systemd/resolved.conf.d
 conf_name=adguardhome.conf
-conf_path="$(realpath -e "${0%/*}/$conf_name")"
+conf_path="${ realpath -e "${0%/*}/$conf_name"; }"
 if [[ ! -d "$system_resolved_d" ]]; then
   mkdir -v "$system_resolved_d"
 fi

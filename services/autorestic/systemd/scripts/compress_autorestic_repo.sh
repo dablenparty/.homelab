@@ -11,7 +11,7 @@ if [[ ! -d "$repo_dir" ]]; then
 fi
 
 # canonicalize path
-repo_dir="$(realpath "$repo_dir")"
+repo_dir="${ realpath "$repo_dir"; }"
 
 if [[ ! -d "$destination_dir" ]]; then
   printf "%s is not a directory!" "$destination_dir" 1>&2
@@ -19,7 +19,7 @@ if [[ ! -d "$destination_dir" ]]; then
 fi
 
 # canonicalize path
-destination_dir="$(realpath "$destination_dir")"
+destination_dir="${ realpath "$destination_dir"; }"
 printf -v date_str '%(%F-%H-%M-%S)T'
 
 dest_file="$destination_dir/${repo_dir##*/}-backup-$date_str.zst"
