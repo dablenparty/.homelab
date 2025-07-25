@@ -1,26 +1,13 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
-shopt -s lastpipe
-
 function print_usage() {
   printf 'usage: %s [options] <command> <service> [service...]\n' "$0"
-  printf 'commands: restart, start, status, stop\n'
+  printf 'command:  docker compose command\n'
   printf 'service:  folder name under services/\n'
   printf 'options:\n'
   printf '  -h: show this help\n'
   # shellcheck disable=SC2016
-  printf '  -s: overwrite $SERVICES_DIR\n'
-}
-
-function service_start() {
-  echo "todo: service_start"
-  exit 3
-}
-
-function service_stop() {
-  echo "todo: service_stop"
-  exit 3
+  printf '  -s: overwrite $SERVICES_DIR for debugging\n'
 }
 
 if [[ -z "$OPTIND" ]]; then
@@ -61,36 +48,23 @@ cmd="$1"
 shift 1
 services=("$@")
 
-# dynamically creating the functions avoids running the case in every loop iteration
-case "$cmd" in
-restart)
-  function opfunc() {
-    service_stop "$@"
-    service_start "$@"
-  }
-  ;;
-start)
-  function opfunc() {
-    service_start "$@"
-  }
-  ;;
-stop)
-  function opfunc() {
-    service_stop "$@"
-  }
-  ;;
-*)
-  printf 'invalid command: %s\n' "$cmd" 1>&2
-  print_usage 1>&2
-  exit 2
-  ;;
-esac
-
 for service in "${services[@]}"; do
   service_dir="$services_dir/$service"
   if [[ ! -d "$service_dir" ]]; then
     printf "error: '%s' is not a valid service dir!\n" "$service_dir" 1>&2
     exit 1
   fi
-  opfunc "$service_dir"
+  # validate docker compose config
+  if ! docker compose --project-directory "$service_dir" config -q; then
+    printf "warn: skipping '%s': invalid config\n" "$service"
+  else
+    suffix='ing'
+    if [[ "$cmd" == "stop" ]]; then
+      suffix='ping'
+    fi
+    printf "%s%s '%s'\n" "$cmd" "$suffix" "$service"
+    docker compose --project-directory "$service_dir" "$cmd"
+  fi
 done
+
+printf 'done!\n'
