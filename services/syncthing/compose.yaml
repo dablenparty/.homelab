@@ -9,7 +9,7 @@ services:
     environment:
       - PGID=1000
       - PUID=1000
-      - TZ=Etc/US
+      - TZ=${TZ:-Etc/US}
     hostname: syncthing
     labels:
       traefik.enable: true
