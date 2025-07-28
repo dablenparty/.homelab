@@ -41,7 +41,7 @@ services:
       - traefik-proxy
 
   traefik:
-    image: traefik:3.4
+    image: traefik:3.5
     container_name: traefik
     restart: unless-stopped
     security_opt:
