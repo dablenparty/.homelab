@@ -1,4 +1,22 @@
 http:
+  routers:
+    syncthing:
+      entrypoints:
+        - 'http'
+        - 'https'
+      middlewares:
+        - https-redirectscheme
+      rule: Host(`syncthing.{{env "BASE_DOMAIN"}}`)
+      tls:
+        certResolver: cloudflare
+      service: syncthing
+  services:
+    syncthing:
+      loadBalancer:
+        servers:
+          - url: 'http://host.docker.internal:8384/'
+          - url: 'https://host.docker.internal:8384/'
+
   middlewares:
     default-security-headers:
       headers:

@@ -1,0 +1,13 @@
+# syncthing comes with a service file in /usr/lib/systemd/system
+# and this path has a higher priority, so we place it here to
+# prevent overwriting the provided service file.
+target = "/usr/local/lib/systemd/system"
+exclude = [
+    '\.unboxrc.*$',
+    '\.bub\.toml$',
+    '^\.git.*$',
+    "^(README|LICEN[CS]E|COPYING).*$",
+]
+include = []
+link_root = false
+link_type = "absolute"

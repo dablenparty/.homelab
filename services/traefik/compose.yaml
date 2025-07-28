@@ -10,6 +10,10 @@ networks:
   traefik-proxy:
     # prevent name mangling
     name: traefik-proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
   cloudflared:
     name: cloudflared
 
@@ -57,6 +61,8 @@ services:
       - cf-api-token # the secret at the top of this file
     env_file:
       - .env # store other secrets e.g., dashboard password
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - traefik-proxy
     ports:
