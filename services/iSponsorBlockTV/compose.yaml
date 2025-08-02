@@ -1,0 +1,9 @@
+services:
+    iSponsorBlockTV:
+        image: ghcr.io/dmunozv04/isponsorblocktv
+        user: ${ISBTV_UID:-1000}:${ISBTV_GID:-1000}
+        container_name: iSponsorBlockTV
+        restart: unless-stopped
+        network_mode: host
+        volumes:
+          - ${DATA_DIR:?DATA_DIR is not set}:/app/data
