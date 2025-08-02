@@ -30,8 +30,8 @@ locations:
         - dch.sh start "$AUTORESTIC_LOCATION"
     from: /mnt/HomelabStorage/adguardhome
     to: homelab-storage
-    # top of every hour
-    cron: '0 * * * *'
+    # once a day at 3 AM
+    cron: '0 3 * * *'
     # auto-prune
     forget: prune
     options:
@@ -50,8 +50,8 @@ locations:
       - /mnt/HomelabStorage/forgejo
       - /mnt/HomelabStorage/forgejo-runner
     to: homelab-storage
-    # top of every hour
-    cron: '0 * * * *'
+    # every 4 hours
+    cron: '0 */4 * * *'
     # auto-prune
     forget: prune
     options:
