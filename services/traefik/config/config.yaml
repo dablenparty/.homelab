@@ -5,6 +5,7 @@ http:
         - 'http'
         - 'https'
       middlewares:
+        - default-security-headers
         - https-redirectscheme
       rule: Host(`syncthing.{{env "BASE_DOMAIN"}}`)
       tls:
