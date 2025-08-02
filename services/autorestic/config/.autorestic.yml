@@ -58,6 +58,21 @@ locations:
       backup:
         tag:
           - essential
+  syncthing-config:
+    hooks:
+      before:
+        - systemctl stop syncthing@syncthing.service
+      after:
+        - systemctl start syncthing@syncthing.service
+    from: /mnt/HomelabStorage/syncthing/config
+    to: homelab-storage
+    # once a day at 3 AM
+    cron: '0 3 * * *'
+    forget: prune
+    options:
+      backup:
+        tag:
+          - essential
   # NOTE: testing this alongside docker-mc-backup
   tekxit-mc-server:
     hooks:
