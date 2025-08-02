@@ -16,6 +16,10 @@ networks:
         - subnet: 172.18.0.0/16
   cloudflared:
     name: cloudflared
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
 
 services:
   cloudflared:
@@ -68,8 +72,6 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 853:853/tcp
-      - 853:853/udp
     environment:
       - TRAEFIK_DASHBOARD_CREDENTIALS=${TRAEFIK_DASHBOARD_CREDENTIALS:?TRAEFIK_DASHBOARD_CREDENTIALS not set}
       # - CF_API_EMAIL=your@email.com # Cloudflare email

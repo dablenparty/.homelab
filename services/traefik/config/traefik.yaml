@@ -11,10 +11,6 @@ entryPoints:
           scheme: https
   https:
     address: ":443"
-  dot:
-    address: ":853"
-  doq:
-    address: ":853/udp"
 serversTransport:
   insecureSkipVerify: true
 ping:
