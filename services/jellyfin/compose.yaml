@@ -1,0 +1,38 @@
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jellyfin.entrypoints: http
+      traefik.http.routers.jellyfin.rule: Host(`jellyfin.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme: https
+      traefik.http.routers.jellyfin.middlewares: jellyfin-https-redirect
+      traefik.http.routers.jellyfin-secure.entrypoints: https
+      traefik.http.routers.jellyfin-secure.rule: Host(`jellyfin.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.jellyfin-secure.tls: true
+      traefik.http.routers.jellyfin-secure.tls.certresolver: cloudflare
+      traefik.http.routers.jellyfin-secure.service: jellyfin
+      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
+    network_mode: host
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      PUID: ${JELLYFIN_UID:?JELLYFIN_UID is not set}
+      PGID: ${JELLYFIN_GID:?JELLYFIN_GID is not set}
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${JELLYFIN_CONFIG_DIR:?JELLYFIN_CONFIG_DIR is not set}:/config
+      - ${JELLYFIN_DATA_DIR:?JELLYFIN_DATA_DIR is not set}:/data
+    # ports:
+    #   - 8096:8096
+    #   - 7359:7359/udp
+    #   - 1900:1900/udp

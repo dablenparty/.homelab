@@ -58,6 +58,20 @@ locations:
       backup:
         tag:
           - essential
+  jellyfin:
+    hooks:
+      prevalidate:
+        - command -v dch.sh >/dev/null
+      before:
+        - dch.sh stop "$AUTORESTIC_LOCATION"
+      after:
+        - dch.sh start "$AUTORESTIC_LOCATION"
+    from: /mnt/WD_Blue_2TB/jellyfin
+    to: homelab-storage
+    # every day at 4:30 AM
+    cron: '30 4 * * *'
+    # auto-prune
+    forget: prune
   syncthing-config:
     hooks:
       before:
