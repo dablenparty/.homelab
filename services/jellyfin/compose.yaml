@@ -12,9 +12,10 @@ services:
               count: all
               capabilities: [gpu]
     # NOTE: if you get 'CUDA device not found' or something similar, uncomment these
-    # docker exec -it jellyfin nvidia-smi
+    # Your system might not have all of these, just comment out the ones that give errors.
+    # Check for GPU access with: docker exec -it jellyfin nvidia-smi
     devices:
-      - /dev/nvidia-caps:/dev/nvidia-caps
+      # - /dev/nvidia-caps:/dev/nvidia-caps
       - /dev/nvidia0:/dev/nvidia0
       - /dev/nvidiactl:/dev/nvidiactl
       - /dev/nvidia-modeset:/dev/nvidia-modeset
