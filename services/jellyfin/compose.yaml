@@ -4,6 +4,13 @@ services:
     container_name: jellyfin
     restart: unless-stopped
     runtime: nvidia
+    healthcheck:
+      test: curl -i http://localhost:8096/health
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      start_interval: 5s
     deploy:
       resources:
         reservations:
