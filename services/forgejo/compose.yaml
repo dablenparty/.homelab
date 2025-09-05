@@ -101,6 +101,7 @@ services:
     depends_on:
       forgejo-server-register:
         condition: service_completed_successfully
+        restart: true
     networks:
       - forgejo-net
     volumes:
@@ -120,6 +121,7 @@ services:
     depends_on:
       forgejo-runner-register:
         condition: service_completed_successfully
+        restart: true
     networks:
       - forgejo-net
     environment:
