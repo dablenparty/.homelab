@@ -13,13 +13,13 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.18.0.0/16
+        - subnet: 10.1.0.0/16
   cloudflared:
     name: cloudflared
     driver: bridge
     ipam:
       config:
-        - subnet: 172.19.0.0/16
+        - subnet: 10.2.0.0/16
 
 services:
   cloudflared:
@@ -29,6 +29,9 @@ services:
     image: cloudflare/cloudflared:latest
     entrypoint: cloudflared
     command: tunnel --no-autoupdate run
+    depends_on:
+      traefik:
+        condition: service_healthy
     healthcheck:
       # WARN: must use array syntax here, otherwise it won't work for some reason
       test: [ "CMD", "cloudflared", "tunnel", "--metrics", "localhost:20241", "ready" ]
@@ -36,7 +39,7 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-      start_interval: 10s
+      start_interval: 3s
     extra_hosts:
       - "host.docker.internal:host-gateway"
     secrets:

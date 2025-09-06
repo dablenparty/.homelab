@@ -16,7 +16,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.22.0.0/16
+        - subnet: 10.64.0.0/16
 
 secrets:
   rcon-passwd:
@@ -27,7 +27,7 @@ services:
     image: ghcr.io/joesturge/lazymc-docker-proxy:latest
     networks:
       minecraft-network:
-        ipv4_address: 172.22.0.2
+        ipv4_address: 10.64.0.2
     restart: unless-stopped
     # sometimes, lazymc doesn't stop the server on startup
     depends_on:
@@ -85,7 +85,7 @@ services:
     stdin_open: true
     networks:
       minecraft-network:
-        ipv4_address: 172.22.0.3
+        ipv4_address: 10.64.0.3
     # handled by lazymc
     restart: no
     ports:
