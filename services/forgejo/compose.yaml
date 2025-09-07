@@ -18,7 +18,7 @@ networks:
 services:
   socket-proxy:
     image: lscr.io/linuxserver/socket-proxy:latest
-    container_name: forgejo-socket-proxy
+    container_name: forgejo-docksock
     environment:
       CONTAINERS: 1
       EXEC: 1
@@ -126,18 +126,19 @@ services:
     networks:
       - forgejo-net
     volumes:
+      - ./register-forgejo-runner.sh:/register-forgejo-runner.sh
       - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     user: 0:0
+    # WARN: required for register script to work
+    env_file: .env
     privileged: true
-    # TODO: extract a script because good lord
     command: >-
-      bash -ec ' forgejo-runner create-runner-file --connect --instance http://forgejo-server:3000 --name runner --secret "${SHARED_SECRET}" ; sed -i -e "s|\"labels\": null|\"labels\": [\"docker-cli:docker://code.forgejo.org/oci/docker:cli\",\"docker:docker://code.forgejo.org/oci/node:20-bookworm\"]|" .runner ; forgejo-runner generate-config > config.yml ; sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: tcp://forgejo-socket-proxy:2375|" -e "s|network: .*|network: forgejo-net|" -e "s|  valid_volumes: \[\]$$|  valid_volumes:\n    - \"**\"|" -e "s|  docker_host: .*|  docker_host: \"tcp://forgejo-socket-proxy:2375\"|" config.yml ; chown -R ${RUNNER_UID}:${RUNNER_GID} /data'
+      bash /register-forgejo-runner.sh
 
   forgejo-runner-daemon:
     container_name: forgejo-runner
     image: code.forgejo.org/forgejo/runner:7.0.0
-    user: ${RUNNER_UID:?RUNNER_UID is not set}:${DOCKER_GID:?DOCKER_GID is not set}
+    user: ${RUNNER_UID:?RUNNER_UID is not set}:${RUNNER_GID:?DOCKER_GID is not set}
     restart: unless-stopped
     depends_on:
       forgejo-runner-register:
@@ -146,7 +147,7 @@ services:
     networks:
       - forgejo-net
     environment:
-      DOCKER_HOST: tcp://forgejo-socket-proxy:2375
+      DOCKER_HOST: ${DOCKER_HOST:?DOCKER_HOST is not defined}
     volumes:
       - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
     # TODO: figure out why this is necessary on v7 and not v6
