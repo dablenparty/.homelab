@@ -16,6 +16,27 @@ networks:
     external: true
 
 services:
+  socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: forgejo-socket-proxy
+    environment:
+      CONTAINERS: 1
+      EXEC: 1
+      POST: 1
+      IMAGES: 1
+      INFO: 1
+      NETWORKS: 1
+      VOLUMES: 1
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - forgejo-net
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+
   forgejo-server:
     image: codeberg.org/forgejo/forgejo:12
     container_name: forgejo-server
@@ -111,7 +132,7 @@ services:
     privileged: true
     # TODO: extract a script because good lord
     command: >-
-      bash -ec ' forgejo-runner create-runner-file --connect --instance http://forgejo-server:3000 --name runner --secret "${SHARED_SECRET}" ; sed -i -e "s|\"labels\": null|\"labels\": [\"docker-cli:docker://code.forgejo.org/oci/docker:cli\",\"docker:docker://code.forgejo.org/oci/node:20-bookworm\"]|" .runner ; forgejo-runner generate-config > config.yml ; sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: unix:///var/run/docker.sock|" -e "s|network: .*|network: forgejo-net|" -e "s|  valid_volumes: \[\]$$|  valid_volumes:\n    - \"**\"|" -e "s|  docker_host: .*|  docker_host: \"unix:///var/run/docker.sock\"|" config.yml ; chown -R ${RUNNER_UID}:${RUNNER_GID} /data'
+      bash -ec ' forgejo-runner create-runner-file --connect --instance http://forgejo-server:3000 --name runner --secret "${SHARED_SECRET}" ; sed -i -e "s|\"labels\": null|\"labels\": [\"docker-cli:docker://code.forgejo.org/oci/docker:cli\",\"docker:docker://code.forgejo.org/oci/node:20-bookworm\"]|" .runner ; forgejo-runner generate-config > config.yml ; sed -i -e "s|^  envs:$$|  envs:\n    DOCKER_HOST: tcp://forgejo-socket-proxy:2375|" -e "s|network: .*|network: forgejo-net|" -e "s|  valid_volumes: \[\]$$|  valid_volumes:\n    - \"**\"|" -e "s|  docker_host: .*|  docker_host: \"tcp://forgejo-socket-proxy:2375\"|" config.yml ; chown -R ${RUNNER_UID}:${RUNNER_GID} /data'
 
   forgejo-runner-daemon:
     container_name: forgejo-runner
@@ -125,10 +146,9 @@ services:
     networks:
       - forgejo-net
     environment:
-      DOCKER_HOST: unix:///var/run/docker.sock
+      DOCKER_HOST: tcp://forgejo-socket-proxy:2375
     volumes:
       - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     # TODO: figure out why this is necessary on v7 and not v6
     command: >-
       /bin/sh -c 'sleep 5; forgejo-runner --config config.yml daemon'

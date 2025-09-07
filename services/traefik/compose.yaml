@@ -7,6 +7,7 @@ secrets:
     file: ./secrets/cf-tunnel-token
 
 networks:
+  docksock-proxy: {}
   traefik-proxy:
     # prevent name mangling
     name: traefik-proxy
@@ -51,18 +52,36 @@ services:
       - cloudflared
       - traefik-proxy
 
+  socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: traefik-socket-proxy
+    environment:
+      CONTAINERS: 1
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docksock-proxy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+
   traefik:
-    image: traefik:3.5
+    image: traefik:3.5.1
     container_name: traefik
     restart: unless-stopped
+    depends_on:
+      - socket-proxy
     security_opt:
       - no-new-privileges:true # helps to increase security
     healthcheck:
       test: traefik healthcheck
-      interval: 10s
+      interval: 1m
       timeout: 10s
-      retries: 3
-      start_period: 10s
+      retries: 5
+      start_period: 30s
+      start_interval: 3s
     secrets:
       - cf-api-email
       - cf-api-token # the secret at the top of this file
@@ -71,6 +90,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
+      - docksock-proxy
       - traefik-proxy
     ports:
       - 80:80
@@ -83,7 +103,6 @@ services:
       - CF_DNS_API_TOKEN_FILE=/run/secrets/cf-api-token # see https://doc.traefik.io/traefik/https/acme/#providers
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - ./config/acme.json:/etc/traefik/acme.json
       - ./config/config.yaml:/etc/traefik/config.yaml:ro
