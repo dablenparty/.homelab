@@ -33,12 +33,6 @@ services:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
 
-      traefik.http.routers.adguard-home.entrypoints: http
-      traefik.http.routers.adguard-home.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.adguard-home.service: adguard-home
-      traefik.http.middlewares.adguard-home-https-redirect.redirectscheme.scheme: https
-      traefik.http.routers.adguard-home.middlewares: adguard-home-https-redirect
-
       traefik.http.routers.adguard-home-secure.entrypoints: https
       traefik.http.routers.adguard-home-secure.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
       traefik.http.routers.adguard-home-secure.tls: true

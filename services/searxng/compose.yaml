@@ -39,6 +39,14 @@ services:
     container_name: searxng
     image: docker.io/searxng/searxng:latest
     restart: unless-stopped
+    user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:8080/healthz || exit 1
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 2m
+      start_interval: 5s
     depends_on:
       redis:
         condition: service_healthy
@@ -51,16 +59,13 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
-      traefik.http.routers.searxng.entrypoints: http
+      traefik.http.routers.searxng.entrypoints: https
       traefik.http.routers.searxng.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.middlewares.searxng-https-redirect.redirectscheme.scheme: https
-      traefik.http.routers.searxng.middlewares: searxng-https-redirect
-      traefik.http.routers.searxng-secure.entrypoints: https
-      traefik.http.routers.searxng-secure.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.searxng-secure.tls: true
-      traefik.http.routers.searxng-secure.tls.certresolver: cloudflare
-      traefik.http.routers.searxng-secure.service: searxng
+      traefik.http.routers.searxng.tls: true
+      traefik.http.routers.searxng.tls.certresolver: cloudflare
+      traefik.http.routers.searxng.service: searxng
       traefik.http.services.searxng.loadbalancer.server.port: 8080
+      traefik.http.services.searxng.loadbalancer.healthcheck.path: /healthz
     environment:
       - SEARXNG_BASE_URL=https://searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}/
       - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}

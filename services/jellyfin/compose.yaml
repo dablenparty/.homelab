@@ -30,16 +30,14 @@ services:
       - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     labels:
       traefik.enable: true
-      traefik.http.routers.jellyfin.entrypoints: http
+      traefik.http.routers.jellyfin.entrypoints: https
       traefik.http.routers.jellyfin.rule: Host(`jellyfin.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme: https
-      traefik.http.routers.jellyfin.middlewares: jellyfin-https-redirect
-      traefik.http.routers.jellyfin-secure.entrypoints: https
-      traefik.http.routers.jellyfin-secure.rule: Host(`jellyfin.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.jellyfin-secure.tls: true
-      traefik.http.routers.jellyfin-secure.tls.certresolver: cloudflare
-      traefik.http.routers.jellyfin-secure.service: jellyfin
+      traefik.http.routers.jellyfin.tls: true
+      traefik.http.routers.jellyfin.tls.certresolver: cloudflare
+      traefik.http.routers.jellyfin.service: jellyfin
+
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
+      traefik.http.services.jellyfin.loadbalancer.healthcheck.path: /health
     network_mode: host
     environment:
       NVIDIA_VISIBLE_DEVICES: all
