@@ -1,0 +1,78 @@
+networks:
+  traefik-proxy:
+    external: true
+
+secrets:
+  grafana-admin-password:
+    file: ./secrets/admin-password
+
+services:
+  # NOTE: install prometheus-node-exporter outside of docker
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: prometheus
+    user: 1000:1000
+    restart: unless-stopped
+    command:
+      - '--config.file=/prometheus/prometheus.yml'
+      - '--log.level=debug'
+    healthcheck:
+      test: wget --timeout=15 --quiet --tries=1 --spider http://localhost:9090/ || exit 1
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+      start_interval: 1s
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.prometheus-secure.entrypoints: https
+      traefik.http.routers.prometheus-secure.rule: Host(`prom.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.prometheus-secure.tls: true
+      traefik.http.routers.prometheus-secure.tls.certresolver: cloudflare
+      traefik.http.routers.prometheus-secure.service: prometheus
+
+      traefik.http.services.prometheus.loadbalancer.server.port: 9090
+    networks:
+      - traefik-proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${PROM_DATA_DIR:?PROM_DATA_DIR is not set}:/prometheus
+      - ./prometheus.yml:/prometheus/prometheus.yml
+    logging:
+      options:
+        max-size: "10M"
+        max-file: "5"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    user: 1000:1000
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - traefik-proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.grafana.entrypoints: http
+      traefik.http.routers.grafana.rule: Host(`grafana.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.middlewares.grafana-https-redirect.redirectscheme.scheme: https
+      traefik.http.routers.grafana.middlewares: grafana-https-redirect
+      traefik.http.routers.grafana-secure.entrypoints: https
+      traefik.http.routers.grafana-secure.rule: Host(`grafana.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.grafana-secure.tls: true
+      traefik.http.routers.grafana-secure.tls.certresolver: cloudflare
+      traefik.http.routers.grafana-secure.service: grafana
+
+      traefik.http.services.grafana.loadbalancer.server.port: 3000
+    secrets:
+      - grafana-admin-password
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+    # NOTE: I highly recommend putting this on an SSD
+    volumes:
+      - ${GRAFANA_DATA_DIR:?GRAFANA_DATA_DIR is not set}:/var/lib/grafana
