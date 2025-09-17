@@ -11,4 +11,4 @@ docker compose down traefik
 rm -rvf ./{config/acme.json,logs}
 touch ./config/acme.json
 chmod 600 ./config/acme.json
-docker compose up -d traefik
+docker compose up -d
