@@ -1,0 +1,37 @@
+networks:
+  traefik-proxy:
+    external: true
+
+secrets:
+  couchlab-args:
+    file: ./secrets/couchlab-args
+  white-lotus-args:
+    file: ./secrets/white-lotus-args
+
+services:
+  couchlab_syncthing_exporter:
+    image: f100024/syncthing_exporter:latest
+    container_name: couchlab_syncthing_exporter
+    restart: unless-stopped
+    # syncthing_exporter uses kingpin for command line parsing. This special syntax reads CLI args
+    # from a file so that I can keep the token in a secret and not an envvar.
+    # see: https://github.com/alecthomas/kingpin?tab=readme-ov-file#reading-arguments-from-a-file
+    command: '@/run/secrets/couchlab-args'
+    secrets:
+      - couchlab-args
+    networks:
+      - traefik-proxy
+    environment:
+      WEB_LISTEN_ADDRESS: ":9093"
+
+  white_lotus_syncthing_exporter:
+    image: f100024/syncthing_exporter:latest
+    container_name: white_lotus_syncthing_exporter
+    restart: unless-stopped
+    command: '@/run/secrets/white-lotus-args'
+    secrets:
+      - white-lotus-args
+    networks:
+      - traefik-proxy
+    environment:
+      WEB_LISTEN_ADDRESS: ":9094"

@@ -3,8 +3,12 @@ networks:
     external: true
 
 secrets:
+  couchlab-syncthing-api-key:
+    file: ./secrets/couchlab-syncthing-api-key
   grafana-admin-password:
     file: ./secrets/admin-password
+  white-lotus-syncthing-api-key:
+    file: ./secrets/white-lotus-syncthing-api-key
 
 services:
   # NOTE: install prometheus-node-exporter outside of docker
@@ -37,6 +41,9 @@ services:
       - traefik-proxy
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    secrets:
+      - white-lotus-syncthing-api-key
+      - couchlab-syncthing-api-key
     volumes:
       - ${PROM_DATA_DIR:?PROM_DATA_DIR is not set}:/prometheus
       - ./prometheus.yml:/prometheus/prometheus.yml
