@@ -7,7 +7,8 @@ secrets:
     file: ./secrets/cf-tunnel-token
 
 networks:
-  docksock-proxy: {}
+  docksock-proxy:
+    driver: bridge
   traefik-proxy:
     # prevent name mangling
     name: traefik-proxy
