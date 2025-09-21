@@ -22,7 +22,8 @@ services:
       timeout: 5s
       retries: 1
       start_period: 30s
-      start_interval: 10s
+      # sometimes, nslookup can take a second or two
+      start_interval: 3s
     # NOTE: enable these in Encryption settings or by manually editing the config
     secrets:
       - le-cert
@@ -61,3 +62,14 @@ services:
     volumes:
       - ${ADGUARD_DIR:?ADGUARD_DIR is not set}/work:/opt/adguardhome/work
       - ${ADGUARD_DIR:?ADGUARD_DIR is not set}/config:/opt/adguardhome/conf
+
+  adguard-exporter:
+    image: ghcr.io/henrywhitaker3/adguard-exporter:latest
+    container_name: adguard-exporter
+    restart: unless-stopped
+    depends_on:
+      adguard-home:
+        condition: service_healthy
+    env_file: exporter.env
+    networks:
+      - traefik-proxy

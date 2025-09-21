@@ -1,0 +1,76 @@
+networks:
+  advisor-net:
+    driver: bridge
+  traefik-proxy:
+    external: true
+
+services:
+  socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: cadvisor-docksock
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:2375/_ping || exit 1
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+    environment:
+      CONTAINERS: 1
+      # IMAGES: 1
+      INFO: 1
+      # NETWORKS: 1
+      # VOLUMES: 1
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - advisor-net
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cAdvisor
+    hostname: cadvisor
+    privileged: true
+    command:
+      - '--allow_dynamic_housekeeping=true'
+      - '--docker=tcp://cadvisor-docksock:2375'
+      - '--storage_driver=redis'
+      - '--storage_driver_host=cadvisor-valkey:6379'
+    networks:
+      - traefik-proxy
+      - advisor-net
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  valkey:
+    image: docker.io/valkey/valkey:8-alpine
+    container_name: cadvisor-valkey
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "valkey-cli ping | grep PONG" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - advisor-net
+    volumes:
+      - ${CADVISOR_DATA_DIR:?CADVISOR_DATA_DIR is not set}:/data
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1m'
+        max-file: '1'
