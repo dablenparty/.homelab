@@ -13,23 +13,9 @@ scrape_configs:
     static_configs:
       - targets: ['couchlab_syncthing_exporter:9093', 'white_lotus_syncthing_exporter:9094']
 
-  - job_name: syncthing-couchlab
-    scheme: https
-    authorization:
-      credentials_file: /run/secrets/couchlab-syncthing-api-key
-    # tls_config:
-    #   insecure_skip_verify: true
+  - job_name: prometheus
     static_configs:
-      - targets: ['syncthing.couchlab.me']
-
-  - job_name: syncthing-lotus
-    scheme: https
-    authorization:
-      credentials_file: /run/secrets/white-lotus-syncthing-api-key
-    tls_config:
-      insecure_skip_verify: true
-    static_configs:
-      - targets: ['white-lotus.internal:8384']
+      - targets: ['localhost:9090']
 
   - job_name: traefik
     static_configs:
