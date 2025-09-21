@@ -97,7 +97,7 @@ locations:
       after:
         - rcon-cli --password "$RCON_PASSWORD" save-on || echo "RCON failed, server not online"
     # NOTE: autorestic runs as root; use absolute path for this
-    from: /home/hunterd/Documents/minecraft/servers/Tekxit4 12.0
+    from: /mnt/WD_Blue_2TB/minecraft/servers/Tekxit4 12.0
     to: homelab-storage
     # top of every hour
     cron: '0 * * * *'
