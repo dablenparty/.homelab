@@ -33,8 +33,7 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cAdvisor
-    hostname: cadvisor
+    container_name: cadvisor
     privileged: true
     command:
       - '--allow_dynamic_housekeeping=true'
