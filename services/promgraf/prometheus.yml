@@ -26,6 +26,10 @@ scrape_configs:
     static_configs:
       - targets: ['traefik:8080']
 
+  - job_name: wud
+    static_configs:
+      - targets: ['wud:3000']
+
   - job_name: node
     scrape_interval: 5s
     static_configs:

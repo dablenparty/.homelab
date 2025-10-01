@@ -1,0 +1,27 @@
+networks:
+  wud-net:
+    driver: bridge
+  traefik-proxy:
+    external: true
+
+services:
+  whatsupdocker:
+    image: getwud/wud
+    container_name: wud
+    # TODO: configure container labels
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.wud-secure.entrypoints: https
+      traefik.http.routers.wud-secure.rule: Host(`wud.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.wud-secure.tls: true
+      traefik.http.routers.wud-secure.tls.certresolver: cloudflare
+      traefik.http.routers.wud-secure.service: wud
+
+      traefik.http.services.wud.loadbalancer.server.port: 3000
+    networks:
+      - traefik-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # ports:
+    #   - 3000:3000
