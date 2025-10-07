@@ -35,7 +35,7 @@ services:
       - /run
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: ghcr.io/google/cadvisor:v0.53.0
     container_name: cadvisor
     privileged: true
     command:
@@ -60,7 +60,7 @@ services:
       - /sys:/sys:ro
 
   valkey:
-    image: docker.io/valkey/valkey:8-alpine
+    image: ghcr.io/valkey-io/valkey:8-alpine
     container_name: cadvisor-valkey
     restart: unless-stopped
     healthcheck:
