@@ -38,6 +38,9 @@ services:
 
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
       traefik.http.services.jellyfin.loadbalancer.healthcheck.path: /health
+
+      wud.tag.include: '^version-(\d+\.\d+\.\d+)$$'
+      wud.link.template: 'https://github.com/linuxserver/docker-jellyfin/releases'
     network_mode: host
     environment:
       NVIDIA_VISIBLE_DEVICES: all

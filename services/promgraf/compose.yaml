@@ -13,7 +13,7 @@ secrets:
 services:
   # NOTE: install prometheus-node-exporter outside of docker
   prometheus:
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:v3.6.0
     container_name: prometheus
     user: 1000:1000
     restart: unless-stopped
@@ -37,6 +37,9 @@ services:
       traefik.http.routers.prometheus-secure.service: prometheus
 
       traefik.http.services.prometheus.loadbalancer.server.port: 9090
+
+      wud.tag.include: '^v\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/prometheus/prometheus/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       - traefik-proxy
     extra_hosts:
@@ -53,7 +56,7 @@ services:
         max-file: "5"
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:12.2.0
     container_name: grafana
     user: 1000:1000
     depends_on:
@@ -76,6 +79,9 @@ services:
       traefik.http.routers.grafana-secure.service: grafana
 
       traefik.http.services.grafana.loadbalancer.server.port: 3000
+
+      wud.tag.include: '^v\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/grafana/grafana/releases/tag/v$${major}.$${minor}.$${patch}'
     secrets:
       - grafana-admin-password
     environment:

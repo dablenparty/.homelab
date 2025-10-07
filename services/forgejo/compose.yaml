@@ -35,6 +35,9 @@ services:
       NETWORKS: 1
       VOLUMES: 1
       TZ: ${TZ:-Etc/UTC}
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -45,12 +48,13 @@ services:
       - /run
 
   forgejo-server:
-    image: codeberg.org/forgejo/forgejo:12
+    # NOTE: I can't get the -rootless versions to work, especially with the runner
+    image: codeberg.org/forgejo/forgejo:${FORGEJO_VERSION:?FORGEJO_VERSION is not set}
     container_name: forgejo-server
     hostname: forgejo-server
     restart: unless-stopped
     healthcheck:
-      test: curl -fSs 127.0.0.1:3000/api/healthz
+      test: curl -fSs http://localhost:3000/api/healthz
       interval: 10s
       timeout: 5s
       retries: 5
@@ -93,6 +97,9 @@ services:
 
       traefik.http.services.forgejo.loadbalancer.server.port: 3000
       traefik.http.services.forgejo.loadbalancer.healthcheck.path: /api/healthz
+
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://codeberg.org/forgejo/forgejo/releases/tag/v$${major}.$${minor}.$${patch}'
     ports:
       - "2221:22"
     networks:
@@ -108,7 +115,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
   forgejo-server-register:
-    image: codeberg.org/forgejo/forgejo:12
+    image: codeberg.org/forgejo/forgejo:${FORGEJO_VERSION:?FORGEJO_VERSION is not set}
     user: 0:0
     privileged: true
     networks:
@@ -123,13 +130,16 @@ services:
       USER_GID: ${GIT_GID:?GIT_GID is not set to git group ID}
 
       FORGEJO__security__INSTALL_LOCK: true
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://codeberg.org/forgejo/forgejo/releases/tag/v$${major}.$${minor}.$${patch}'
     volumes:
       - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
     command: >-
-      bash -c 'su -c "forgejo forgejo-cli actions register --secret ${SHARED_SECRET}" git'
+      bash -c 'su -c "forgejo forgejo-cli actions register --keep-labels --secret ${SHARED_SECRET}" git'
 
   forgejo-runner-register:
-    image: code.forgejo.org/forgejo/runner:7.0.0
+    image: code.forgejo.org/forgejo/runner:${FORGEJO_RUNNER_VERSION:?FORGEJO_RUNNER_VERSION is not set}
     depends_on:
       forgejo-server-register:
         condition: service_completed_successfully
@@ -145,10 +155,13 @@ services:
     privileged: true
     command: >-
       bash /register-forgejo-runner.sh
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://code.forgejo.org/forgejo/runner/releases/tag/v$${major}.$${minor}.$${patch}'
 
   forgejo-runner-daemon:
     container_name: forgejo-runner
-    image: code.forgejo.org/forgejo/runner:7.0.0
+    image: code.forgejo.org/forgejo/runner:${FORGEJO_RUNNER_VERSION:?FORGEJO_RUNNER_VERSION is not set}
     user: ${RUNNER_UID:?RUNNER_UID is not set}:${RUNNER_GID:?DOCKER_GID is not set}
     restart: unless-stopped
     depends_on:
@@ -164,3 +177,6 @@ services:
     # TODO: figure out why this is necessary on v7 and not v6
     command: >-
       /bin/sh -c 'sleep 5; forgejo-runner --config config.yml daemon'
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://code.forgejo.org/forgejo/runner/releases/tag/v$${major}.$${minor}.$${patch}'

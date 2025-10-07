@@ -24,7 +24,7 @@ secrets:
 
 services:
   lazymc:
-    image: ghcr.io/joesturge/lazymc-docker-proxy:latest
+    image: ghcr.io/joesturge/lazymc-docker-proxy:v2.7.3
     networks:
       minecraft-network:
         ipv4_address: 10.64.0.2
@@ -33,6 +33,9 @@ services:
     depends_on:
       mc:
         condition: service_started
+    labels:
+      wud.tag.include: '^v\d+\.\d+\.\d+'
+      wud.link.template: 'https://github.com/joesturge/lazymc-docker-proxy/releases/tag/$${major}.$${minor}.$${patch}'
     volumes:
       - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/server:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -40,7 +43,7 @@ services:
       - 25565:${MC_PORT:-25565}
 
   mc:
-    image: itzg/minecraft-server:java17
+    image: ghcr.io/itzg/minecraft-server:2025.10.1-java17
     user: "1000"
     tty: true
     stdin_open: true
@@ -68,6 +71,10 @@ services:
       lazymc.time.minimum_online_time: ${LAZYMC_MIN_ONLINE_TIME:-120}
       # defaults to 600 seconds (10 minutes)
       lazymc.time.sleep_after: ${LAZYMC_SLEEP_AFTER:-600}
+
+      wud.tag.include: '^\d+\.\d+\.\d+-java17$$'
+      wud.tag.transform: '^(\d+\.\d+\.\d+)-java17$$ => $$1'
+      wud.link.template: 'https://github.com/itzg/docker-minecraft-server/releases/tag/$${major}.$${minor}.$${patch}'
     secrets:
       - rcon-passwd
     environment:

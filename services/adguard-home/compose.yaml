@@ -47,6 +47,9 @@ services:
       traefik.http.routers.adguard-doh.tls: true
       traefik.http.routers.adguard-doh.service: adguard-doh
       traefik.http.services.adguard-doh.loadbalancer.server.url: "https://adguard-home.${TRAEFIK_BASE_DOMAIN}/dns-query"
+
+      wud.tag.include: '^v\d\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/AdguardTeam/AdGuardHome/releases/tag/v$${major}.$${minor}.$${patch}'
     ports:
       # DNS
       - 53:53/tcp
@@ -73,3 +76,6 @@ services:
     env_file: exporter.env
     networks:
       - traefik-proxy
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true

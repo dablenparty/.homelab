@@ -27,6 +27,10 @@ services:
       start_period: 30s
     networks:
       - searxng
+    labels:
+      wud.tag.include: '^\d+-alpine$$'
+      wud.watch.digest: true
+      wud.link.template: 'https://github.com/valkey-io/valkey/releases'
     volumes:
       - valkey-data2:/data
     logging:
@@ -37,7 +41,7 @@ services:
 
   searxng:
     container_name: searxng
-    image: docker.io/searxng/searxng:latest
+    image: ghcr.io/searxng/searxng:2025.10.4-7bf65d68c
     restart: unless-stopped
     user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
     healthcheck:
@@ -66,6 +70,9 @@ services:
       traefik.http.routers.searxng.service: searxng
       traefik.http.services.searxng.loadbalancer.server.port: 8080
       traefik.http.services.searxng.loadbalancer.healthcheck.path: /healthz
+
+      wud.tag.include: '^(\d+\.\d+\.\d+)-.*$$'
+      wud.tag.transform: '^(\d+\.\d+\.\d+)-.*$$ => $$1'
     environment:
       - SEARXNG_BASE_URL=https://searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}/
       - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}

@@ -4,10 +4,31 @@ networks:
   traefik-proxy:
     external: true
 
+secrets:
+  codeberg-username:
+    file: ./secrets/codeberg-username
+  codeberg-password:
+    file: ./secrets/codeberg-password
+  lscr-private-username:
+    file: ./secrets/lscr-private-username
+  lscr-private-token:
+    file: ./secrets/lscr-private-token
+
 services:
   whatsupdocker:
-    image: getwud/wud
+    image: ghcr.io/getwud/wud:8.1.1
     container_name: wud
+    environment:
+      WUD_REGISTRY_LSCR_PUBLIC_USERNAME__FILE: /run/secrets/lscr-private-username
+      WUD_REGISTRY_LSCR_PUBLIC_TOKEN__FILE: /run/secrets/lscr-private-token
+
+      WUD_REGISTRY_FORGEJO_CODEBERG_URL: https://codeberg.org
+      WUD_REGISTRY_FORGEJO_CODEBERG_LOGIN__FILE: /run/secrets/codeberg-username
+      WUD_REGISTRY_FORGEJO_CODEBERG_PASSWORD__FILE: /run/secrets/codeberg-password
+
+      WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_URL: https://code.forgejo.org
+      WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_LOGIN__FILE: /run/secrets/codeberg-username
+      WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_PASSWORD__FILE: /run/secrets/codeberg-password
     # TODO: configure container labels
     labels:
       traefik.enable: true
@@ -19,9 +40,15 @@ services:
       traefik.http.routers.wud-secure.service: wud
 
       traefik.http.services.wud.loadbalancer.server.port: 3000
+
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}'
     networks:
       - traefik-proxy
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    # ports:
-    #   - 3000:3000
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    secrets:
+      - codeberg-username
+      - codeberg-password
+      - lscr-private-token
+      - lscr-private-username

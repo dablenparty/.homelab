@@ -52,6 +52,9 @@ services:
     networks:
       - cloudflared
       - traefik-proxy
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
 
   socket-proxy:
     image: lscr.io/linuxserver/socket-proxy:latest
@@ -66,6 +69,9 @@ services:
     environment:
       CONTAINERS: 1
       TZ: ${TZ:-Etc/UTC}
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -76,7 +82,7 @@ services:
       - /run
 
   traefik:
-    image: traefik:3.5.2
+    image: traefik:v3.5.3
     container_name: traefik
     restart: unless-stopped
     depends_on:
@@ -135,3 +141,6 @@ services:
       traefik.http.routers.traefik-secure.service: api@internal
 
       traefik.tls.option.default.alpnProtocols: 'http/1.1,h2,dot'
+
+      wud.tag.include: '^v\d+\.\d+\.\d+$$'
+      wud.link.include: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'

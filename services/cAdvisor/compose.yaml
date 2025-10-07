@@ -22,6 +22,9 @@ services:
       # NETWORKS: 1
       # VOLUMES: 1
       TZ: ${TZ:-Etc/UTC}
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -40,6 +43,14 @@ services:
       - '--docker=tcp://cadvisor-docksock:2375'
       - '--storage_driver=redis'
       - '--storage_driver_host=cadvisor-valkey:6379'
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    labels:
+      wud.tag.include: '^v\d+\.\d+\.\d+$$'
+      wud.link.include: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       - traefik-proxy
       - advisor-net
@@ -47,11 +58,6 @@ services:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
       - /sys:/sys:ro
-    depends_on:
-      socket-proxy:
-        condition: service_healthy
-      valkey:
-        condition: service_healthy
 
   valkey:
     image: docker.io/valkey/valkey:8-alpine
@@ -68,6 +74,9 @@ services:
       - advisor-net
     volumes:
       - ${CADVISOR_DATA_DIR:?CADVISOR_DATA_DIR is not set}:/data
+    labels:
+      wud.tag.include: '^\d+-alpine$$'
+      wud.link.template: 'https://github.com/valkey-io/valkey/releases/tag/$${major}.$${minor}.$${patch}'
     logging:
       driver: 'json-file'
       options:
