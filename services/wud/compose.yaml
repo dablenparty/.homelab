@@ -18,6 +18,7 @@ services:
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.1.1
     container_name: wud
+    restart: unless-stopped
     environment:
       WUD_REGISTRY_LSCR_PUBLIC_USERNAME__FILE: /run/secrets/lscr-private-username
       WUD_REGISTRY_LSCR_PUBLIC_TOKEN__FILE: /run/secrets/lscr-private-token
