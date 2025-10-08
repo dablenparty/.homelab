@@ -1,0 +1,3 @@
+[submodule "services/13ft-ladder/patched-fork"]
+	path = services/13ft-ladder/patched-fork
+	url = git@github.com:dablenparty/13ft.git
