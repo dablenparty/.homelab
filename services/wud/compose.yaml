@@ -30,6 +30,8 @@ services:
       WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_URL: https://code.forgejo.org
       WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_LOGIN__FILE: /run/secrets/codeberg-username
       WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_PASSWORD__FILE: /run/secrets/codeberg-password
+
+      WUD_TRIGGER_HTTP_N8N_URL: ${N8N_WEBHOOK_URL:?N8N_WEBHOOK_URL is not set}
     # TODO: configure container labels
     labels:
       traefik.enable: true

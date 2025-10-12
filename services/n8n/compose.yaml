@@ -1,0 +1,116 @@
+x-ollama: &base-ollama
+  image: ollama/ollama:0.12.4
+  labels:
+    wud.tag.include: '^\d+\.\d+\.\d+$$'
+    wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
+  devices:
+    - /dev/nvidia-caps:/dev/nvidia-caps
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-modeset:/dev/nvidia-modeset
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+  volumes:
+    - ${OLLAMA_DATA_DIR:?OLLAMA_DATA_DIR is not set}:/root/.ollama
+
+networks:
+  traefik-proxy:
+    external: true
+
+services:
+  ollama:
+    <<: *base-ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ollama --version && ollama ps || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      start_interval: 1s
+    container_name: ollama
+    hostname: ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 6h
+    networks:
+      - traefik-proxy
+    ports:
+      - "127.0.0.1:11434:11434"
+
+  init-ollama:
+    <<: *base-ollama
+    network_mode: service:ollama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - "sleep 3; ollama pull ${DEFAULT_MODEL:?DEFAULT_MODEL is not set}"
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:1.115.0
+    container_name: n8n
+    restart: unless-stopped
+    depends_on:
+      init-ollama:
+        condition: service_completed_successfully
+    healthcheck:
+      test: wget --spider http://127.0.0.1:5678/healthz > /dev/null 2>&1 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 1m
+      start_interval: 2s
+    ports:
+      - "127.0.0.1:5678:5678"
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.n8n.tls: true
+      traefik.http.routers.n8n.tls.certresolver: cloudflare
+      traefik.http.routers.n8n.entrypoints: http,https
+      traefik.http.routers.n8n.rule: Host(`${SUBDOMAIN:?SUBDOMAIN is not set}.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+
+      traefik.http.middlewares.n8n.headers.SSLRedirect: true
+      traefik.http.middlewares.n8n.headers.STSSeconds: 315360000
+      traefik.http.middlewares.n8n.headers.browserXSSFilter: true
+      traefik.http.middlewares.n8n.headers.contentTypeNosniff: true
+      traefik.http.middlewares.n8n.headers.forceSTSHeader: true
+      traefik.http.middlewares.n8n.headers.SSLHost: ${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
+      traefik.http.middlewares.n8n.headers.STSIncludeSubdomains: true
+      traefik.http.middlewares.n8n.headers.STSPreload: true
+
+      traefik.http.routers.n8n.middlewares: n8n@docker
+      traefik.http.routers.n8n.service: n8n
+
+      traefik.http.services.n8n.loadbalancer.server.port: 5678
+
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/n8n-io/n8n/releases/tag/n8n%40$${major}.$${minor}.$${patch}'
+    environment:
+      DB_SQLITE_POOL_SIZE: 2
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+      N8N_HOST: ${SUBDOMAIN}.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      N8N_RUNNERS_ENABLED: true
+      NODE_ENV: production
+      WEBHOOK_URL: https://${SUBDOMAIN}.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}/
+      GENERIC_TIMEZONE: ${TZ:?TZ is not set}
+      TZ: ${TZ:?TZ is not set}
+    networks:
+      - traefik-proxy
+    volumes:
+      - ${N8N_DATA_DIR:?N8N_DATA_DIR is not set}/n8n:/home/node/.n8n
+      - ${N8N_DATA_DIR:?N8N_DATA_DIR is not set}/files:/files
+

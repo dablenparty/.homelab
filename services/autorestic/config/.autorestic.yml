@@ -72,6 +72,21 @@ locations:
     cron: '30 4 * * *'
     # auto-prune
     forget: prune
+  n8n:
+    hooks:
+      prevalidate:
+        - command -v dch.sh >/dev/null
+      before:
+        - dch.sh stop "$AUTORESTIC_LOCATION"
+      after:
+        - dch.sh start "$AUTORESTIC_LOCATION"
+    from:
+      - /mnt/WD_Blue_2TB/n8n
+      - /mnt/WD_Blue_2TB/ollama
+    to: homelab-storage
+    # once a day at 5:00 AM
+    cron: '0 5 * * *'
+    forget: prune
   syncthing-config:
     hooks:
       before:
@@ -87,7 +102,6 @@ locations:
       backup:
         tag:
           - essential
-  # NOTE: testing this alongside docker-mc-backup
   tekxit-mc-server:
     hooks:
       prevalidate:
@@ -96,7 +110,6 @@ locations:
         - (rcon-cli --password "$RCON_PASSWORD" save-off && rcon-cli --password "$RCON_PASSWORD" save-all flush && sync "/home/hunterd/Documents/minecraft/servers/Tekxit4 12.0") || echo "RCON failed, server not online"
       after:
         - rcon-cli --password "$RCON_PASSWORD" save-on || echo "RCON failed, server not online"
-    # NOTE: autorestic runs as root; use absolute path for this
     from: /mnt/WD_Blue_2TB/minecraft/servers/Tekxit4 12.0
     to: homelab-storage
     # top of every hour
@@ -107,7 +120,6 @@ locations:
         exclude:
           - 'cache'
           - '*.tmp'
-  # TODO: backup DVD's & Blu-Rays
 
 backends:
   homelab-storage:
