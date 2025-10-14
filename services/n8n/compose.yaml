@@ -1,8 +1,5 @@
 x-ollama: &base-ollama
   image: ollama/ollama:0.12.4
-  labels:
-    wud.tag.include: '^\d+\.\d+\.\d+$$'
-    wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
   devices:
     - /dev/nvidia-caps:/dev/nvidia-caps
     - /dev/nvidia0:/dev/nvidia0
@@ -23,10 +20,19 @@ x-ollama: &base-ollama
 networks:
   traefik-proxy:
     external: true
+  n8n-net:
+    driver: bridge
+
+secrets:
+  n8n-postgres-password:
+    file: ./secrets/n8n-postgres-password
 
 services:
   ollama:
     <<: *base-ollama
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
     restart: unless-stopped
     healthcheck:
       test: ollama --version && ollama ps || exit 1
@@ -40,7 +46,7 @@ services:
     environment:
       OLLAMA_KEEP_ALIVE: 6h
     networks:
-      - traefik-proxy
+      - n8n-net
     ports:
       - "127.0.0.1:11434:11434"
 
@@ -50,6 +56,7 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+        restart: true
     environment:
       OLLAMA_HOST: ollama:11434
     entrypoint: /bin/sh
@@ -57,13 +64,43 @@ services:
       - "-c"
       - "sleep 3; ollama pull ${DEFAULT_MODEL:?DEFAULT_MODEL is not set}"
 
+  postgres:
+    image: postgres:18.0-alpine
+    container_name: n8n-postgres
+    hostname: n8n-postgres
+    restart: unless-stopped
+    secrets:
+      - n8n-postgres-password
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    labels:
+      wud.tag.include: '^(\d+(\.\d+)?)-?.*$$'
+      wud.tag.transform: '^(\d+(\.\d+)?)-?.*$$ => $$1'
+      wud.link.template: 'https://www.postgresql.org/docs/release/$${major}.$${minor}/'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is not set}
+      POSTGRES_PASSWORD_FILE: /run/secrets/n8n-postgres-password
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is not set}
+    networks:
+      - n8n-net
+    # WARN: 18 uses a new PGDATA: https://hub.docker.com/_/postgres#pgdata
+    volumes:
+      - ${POSTGRES_DATA_DIR:?POSTGRES_DATA_DIR is not set}:/var/lib/postgresql
+
   n8n:
-    image: docker.n8n.io/n8nio/n8n:1.115.0
+    image: docker.n8n.io/n8nio/n8n:1.114.4
     container_name: n8n
     restart: unless-stopped
     depends_on:
       init-ollama:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    secrets:
+      - n8n-postgres-password
     healthcheck:
       test: wget --spider http://127.0.0.1:5678/healthz > /dev/null 2>&1 || exit 1
       interval: 30s
@@ -98,7 +135,14 @@ services:
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/n8n-io/n8n/releases/tag/n8n%40$${major}.$${minor}.$${patch}'
     environment:
-      DB_SQLITE_POOL_SIZE: 2
+      DB_TYPE: postgresdb
+      # never underestimate the dunderscore
+      DB_TABLE_PREFIX: __
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-n8n}
+      DB_POSTGRESDB_HOST: n8n-postgres
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:-n8n}
+      DB_POSTGRESDB_PASSWORD_FILE: /run/secrets/n8n-postgres-password
+
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
       N8N_HOST: ${SUBDOMAIN}.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
       N8N_PORT: 5678
@@ -110,6 +154,7 @@ services:
       TZ: ${TZ:?TZ is not set}
     networks:
       - traefik-proxy
+      - n8n-net
     volumes:
       - ${N8N_DATA_DIR:?N8N_DATA_DIR is not set}/n8n:/home/node/.n8n
       - ${N8N_DATA_DIR:?N8N_DATA_DIR is not set}/files:/files
