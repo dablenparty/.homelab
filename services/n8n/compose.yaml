@@ -1,5 +1,6 @@
 x-ollama: &base-ollama
   image: ollama/ollama:0.12.4
+  user: ${OLLAMA_UID:-1000}:${OLLAMA_GID:-1000}
   devices:
     - /dev/nvidia-caps:/dev/nvidia-caps
     - /dev/nvidia0:/dev/nvidia0
@@ -15,7 +16,7 @@ x-ollama: &base-ollama
             count: all
             capabilities: [gpu]
   volumes:
-    - ${OLLAMA_DATA_DIR:?OLLAMA_DATA_DIR is not set}:/root/.ollama
+    - ${OLLAMA_DATA_DIR:?OLLAMA_DATA_DIR is not set}:/.ollama
 
 networks:
   traefik-proxy:
@@ -30,9 +31,8 @@ secrets:
 services:
   ollama:
     <<: *base-ollama
-    labels:
-      wud.tag.include: '^\d+\.\d+\.\d+$$'
-      wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
+    container_name: ollama
+    hostname: ollama
     restart: unless-stopped
     healthcheck:
       test: ollama --version && ollama ps || exit 1
@@ -41,8 +41,9 @@ services:
       retries: 5
       start_period: 30s
       start_interval: 1s
-    container_name: ollama
-    hostname: ollama
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
     environment:
       OLLAMA_KEEP_ALIVE: 6h
     networks:
@@ -69,13 +70,16 @@ services:
     container_name: n8n-postgres
     hostname: n8n-postgres
     restart: unless-stopped
+    user: ${POSTGRES_UID:-1000}:${POSTGRES_GID:-1000}
     secrets:
       - n8n-postgres-password
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
-      interval: 5s
-      timeout: 5s
+      interval: 1m
+      timeout: 10s
       retries: 10
+      start_period: 1m
+      start_interval: 1s
     labels:
       wud.tag.include: '^(\d+(\.\d+)?)-?.*$$'
       wud.tag.transform: '^(\d+(\.\d+)?)-?.*$$ => $$1'
