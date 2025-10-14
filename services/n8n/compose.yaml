@@ -81,8 +81,8 @@ services:
       start_period: 1m
       start_interval: 1s
     labels:
-      wud.tag.include: '^(\d+(\.\d+)?)-?.*$$'
-      wud.tag.transform: '^(\d+(\.\d+)?)-?.*$$ => $$1'
+      wud.tag.include: '^(\d+(\.\d+)?)(-.*)?$$'
+      wud.tag.transform: '^(\d+(\.\d+)?)(-.*)?$$ => $$1'
       wud.link.template: 'https://www.postgresql.org/docs/release/$${major}.$${minor}/'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is not set}
