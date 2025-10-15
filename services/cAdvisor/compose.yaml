@@ -38,6 +38,7 @@ services:
     image: ghcr.io/google/cadvisor:v0.53.0
     container_name: cadvisor
     privileged: true
+    restart: unless-stopped
     command:
       - '--allow_dynamic_housekeeping=true'
       - '--docker=tcp://cadvisor-docksock:2375'
