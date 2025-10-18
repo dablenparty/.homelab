@@ -5,6 +5,29 @@
 # NOTE: a token obtained from the Forgejo web interface cannot be used
 #       as a shared secret.
 
+x-forgejo-server: &base-forgejo-server
+    # NOTE: I can't get the -rootless versions to work, especially with the runner
+    image: codeberg.org/forgejo/forgejo:${FORGEJO_VERSION:?FORGEJO_VERSION is not set}
+    healthcheck:
+      test: curl -fSs http://localhost:3000/api/healthz
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 200s
+      start_interval: 5s
+    volumes:
+      - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+x-forgejo-runner: &base-forgejo-runner
+    image: code.forgejo.org/forgejo/runner:${FORGEJO_RUNNER_VERSION:?FORGEJO_RUNNER_VERSION is not set}
+    networks:
+      - forgejo-net
+    volumes:
+      - ./register-forgejo-runner.sh:/register-forgejo-runner.sh
+      - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
+
 networks:
   forgejo-net:
     driver: bridge
@@ -48,18 +71,10 @@ services:
       - /run
 
   forgejo-server:
-    # NOTE: I can't get the -rootless versions to work, especially with the runner
-    image: codeberg.org/forgejo/forgejo:${FORGEJO_VERSION:?FORGEJO_VERSION is not set}
+    <<: *base-forgejo-server
     container_name: forgejo-server
     hostname: forgejo-server
     restart: unless-stopped
-    healthcheck:
-      test: curl -fSs http://localhost:3000/api/healthz
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 200s
-      start_interval: 5s
     environment:
       USER_UID: ${GIT_UID:?GIT_UID is not set to git user ID}
       USER_GID: ${GIT_GID:?GIT_GID is not set to git group ID}
@@ -90,6 +105,7 @@ services:
       traefik.http.middlewares.forgejo-https-redirect.redirectscheme.scheme: https
       traefik.http.routers.forgejo.middlewares: forgejo-https-redirect
       traefik.http.routers.forgejo-secure.entrypoints: https
+      traefik.http.routers.forgejo-secure.middlewares: default-security-headers@file
       traefik.http.routers.forgejo-secure.rule: Host(`forgejo.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
       traefik.http.routers.forgejo-secure.tls: true
       traefik.http.routers.forgejo-secure.tls.certresolver: cloudflare
@@ -99,7 +115,7 @@ services:
       traefik.http.services.forgejo.loadbalancer.healthcheck.path: /api/healthz
 
       wud.tag.include: '^\d+\.\d+\.\d+$$'
-      wud.link.template: 'https://codeberg.org/forgejo/forgejo/releases/tag/v$${major}.$${minor}.$${patch}'
+      wud.link.template: 'https://codeberg.org/forgejo/forgejo/src/branch/forgejo/release-notes-published/$${major}.$${minor}.$${patch}.md'
     ports:
       - "2221:22"
     networks:
@@ -109,17 +125,11 @@ services:
       - cloudflared
       # for https
       - traefik-proxy
-    volumes:
-      - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
 
   forgejo-server-register:
-    image: codeberg.org/forgejo/forgejo:${FORGEJO_VERSION:?FORGEJO_VERSION is not set}
+    <<: *base-forgejo-server
     user: 0:0
     privileged: true
-    networks:
-      - forgejo-net
     depends_on:
       socket-proxy:
         condition: service_healthy
@@ -130,50 +140,33 @@ services:
       USER_GID: ${GIT_GID:?GIT_GID is not set to git group ID}
 
       FORGEJO__security__INSTALL_LOCK: true
-    labels:
-      wud.tag.include: '^\d+\.\d+\.\d+$$'
-      wud.link.template: 'https://codeberg.org/forgejo/forgejo/releases/tag/v$${major}.$${minor}.$${patch}'
-    volumes:
-      - ${FORGEJO_DATA_PATH:?FORGEJO_DATA_PATH not set}:/data
     command: >-
       bash -c 'su -c "forgejo forgejo-cli actions register --keep-labels --secret ${SHARED_SECRET}" git'
 
   forgejo-runner-register:
-    image: code.forgejo.org/forgejo/runner:${FORGEJO_RUNNER_VERSION:?FORGEJO_RUNNER_VERSION is not set}
+    <<: *base-forgejo-runner
     depends_on:
       forgejo-server-register:
         condition: service_completed_successfully
         restart: true
-    networks:
-      - forgejo-net
-    volumes:
-      - ./register-forgejo-runner.sh:/register-forgejo-runner.sh
-      - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
     user: 0:0
     # WARN: required for register script to work
     env_file: .env
     privileged: true
     command: >-
       bash /register-forgejo-runner.sh
-    labels:
-      wud.tag.include: '^\d+\.\d+\.\d+$$'
-      wud.link.template: 'https://code.forgejo.org/forgejo/runner/releases/tag/v$${major}.$${minor}.$${patch}'
 
   forgejo-runner-daemon:
+    <<: *base-forgejo-runner
     container_name: forgejo-runner
-    image: code.forgejo.org/forgejo/runner:${FORGEJO_RUNNER_VERSION:?FORGEJO_RUNNER_VERSION is not set}
     user: ${RUNNER_UID:?RUNNER_UID is not set}:${RUNNER_GID:?DOCKER_GID is not set}
     restart: unless-stopped
     depends_on:
       forgejo-runner-register:
         condition: service_completed_successfully
         restart: true
-    networks:
-      - forgejo-net
     environment:
       DOCKER_HOST: ${DOCKER_HOST:?DOCKER_HOST is not defined}
-    volumes:
-      - ${FORGEJO_RUNNER_PATH:?FORGEJO_RUNNER_PATH is not set}:/data
     # TODO: figure out why this is necessary on v7 and not v6
     command: >-
       /bin/sh -c 'sleep 5; forgejo-runner --config config.yml daemon'
