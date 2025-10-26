@@ -13,7 +13,7 @@ secrets:
 services:
   # NOTE: install prometheus-node-exporter outside of docker
   prometheus:
-    image: prom/prometheus:v3.6.0
+    image: prom/prometheus:v3.7.1
     container_name: prometheus
     user: 1000:1000
     restart: unless-stopped
