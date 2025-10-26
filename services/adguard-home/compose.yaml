@@ -29,7 +29,8 @@ services:
       - le-cert
       - le-key
     networks:
-      - traefik-proxy
+      traefik-proxy:
+        ipv4_address: 10.1.1.10
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
