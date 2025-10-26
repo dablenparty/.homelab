@@ -23,15 +23,21 @@ http:
   middlewares:
     default-security-headers:
       headers:
+        browserXSSFilter: true
         customBrowserXSSValue: 0                            # X-XSS-Protection=1; mode=block
         contentTypeNosniff: true                          # X-Content-Type-Options=nosniff
         forceSTSHeader: true                              # Add the Strict-Transport-Security header even when the connection is HTTP
         frameDeny: false                                   # X-Frame-Options=deny
         referrerPolicy: "strict-origin-when-cross-origin"
+        SSLHost: {{env "BASE_DOMAIN"}}
+        SSLRedirect: true
         stsIncludeSubdomains: true                        # Add includeSubdomains to the Strict-Transport-Security header
         stsPreload: true                                  # Add preload flag appended to the Strict-Transport-Security header
         stsSeconds: 3153600                              # Set the max-age of the Strict-Transport-Security header (63072000 = 2 years)
-        contentSecurityPolicy: "default-src 'self'"
+        contentSecurityPolicy: >
+          default-src 'self' *.{{ env "BASE_DOMAIN" }};
+          img-src 'self' blob: data:;
+          font-src 'self';
         customRequestHeaders:
           X-Forwarded-Proto: https
     https-redirectscheme:
@@ -39,3 +45,11 @@ http:
         scheme: https
         permanent: true
 
+tls:
+  options:
+    default:
+      cipherSuites:
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      sniStrict: true

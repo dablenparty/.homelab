@@ -126,16 +126,7 @@ services:
       traefik.http.routers.n8n.entrypoints: http,https
       traefik.http.routers.n8n.rule: Host(`${SUBDOMAIN:?SUBDOMAIN is not set}.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
 
-      traefik.http.middlewares.n8n.headers.SSLRedirect: true
-      traefik.http.middlewares.n8n.headers.STSSeconds: 315360000
-      traefik.http.middlewares.n8n.headers.browserXSSFilter: true
-      traefik.http.middlewares.n8n.headers.contentTypeNosniff: true
-      traefik.http.middlewares.n8n.headers.forceSTSHeader: true
-      traefik.http.middlewares.n8n.headers.SSLHost: ${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}
-      traefik.http.middlewares.n8n.headers.STSIncludeSubdomains: true
-      traefik.http.middlewares.n8n.headers.STSPreload: true
-
-      traefik.http.routers.n8n.middlewares: n8n@docker
+      traefik.http.routers.n8n.middlewares: default-security-headers@file
       traefik.http.routers.n8n.service: n8n
 
       traefik.http.services.n8n.loadbalancer.server.port: 5678
