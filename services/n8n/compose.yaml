@@ -59,6 +59,8 @@ services:
       ollama:
         condition: service_healthy
         restart: true
+    labels:
+      wud.watch: false
     environment:
       OLLAMA_HOST: ollama:11434
     entrypoint: /bin/sh
