@@ -1,5 +1,5 @@
 x-ollama: &base-ollama
-  image: ollama/ollama:0.12.4
+  image: ollama/ollama:0.12.6
   user: ${OLLAMA_UID:-1000}:${OLLAMA_GID:-1000}
   devices:
     - /dev/nvidia-caps:/dev/nvidia-caps
@@ -8,6 +8,7 @@ x-ollama: &base-ollama
     - /dev/nvidia-modeset:/dev/nvidia-modeset
     - /dev/nvidia-uvm:/dev/nvidia-uvm
     - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+  runtime: nvidia
   deploy:
     resources:
       reservations:
@@ -96,7 +97,7 @@ services:
 
   n8n:
     # NOTE: this image already drops root perms
-    image: docker.n8n.io/n8nio/n8n:1.114.4
+    image: n8nio/n8n:1.116.2
     container_name: n8n
     restart: unless-stopped
     depends_on:
