@@ -15,10 +15,40 @@ secrets:
     file: ./secrets/lscr-private-token
 
 services:
+  socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: wud-socket-proxy
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:2375/_ping || exit 1
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+    environment:
+      CONTAINERS: 1
+      IMAGES: 1
+      INFO: 1
+      TZ: ${TZ:-Etc/UTC}
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - wud-net
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.1.1
     container_name: wud
     restart: unless-stopped
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
     environment:
       WUD_REGISTRY_LSCR_PUBLIC_USERNAME__FILE: /run/secrets/lscr-private-username
       WUD_REGISTRY_LSCR_PUBLIC_TOKEN__FILE: /run/secrets/lscr-private-token
@@ -32,7 +62,10 @@ services:
       WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_PASSWORD__FILE: /run/secrets/codeberg-password
 
       WUD_TRIGGER_HTTP_N8N_URL: ${N8N_WEBHOOK_URL:?N8N_WEBHOOK_URL is not set}
-    # TODO: configure container labels
+
+      WUD_WATCHER_DOCKER_HOST: wud-socket-proxy
+      WUD_WATCHER_DOCKER_PORT: 2375
+      WUD_WATCHER_DOCKER_SOCKET: tcp://wud-socket-proxy
     labels:
       traefik.enable: true
       traefik.docker.network: traefik-proxy
@@ -49,8 +82,7 @@ services:
       wud.link.template: 'https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}'
     networks:
       - traefik-proxy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - wud-net
     secrets:
       - codeberg-username
       - codeberg-password
