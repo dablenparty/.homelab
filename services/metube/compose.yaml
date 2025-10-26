@@ -1,0 +1,32 @@
+networks:
+  traefik-proxy:
+    external: true
+
+services:
+  # FIXME: healthcheck
+  metube:
+    image: ghcr.io/alexta69/metube:2025.10.23
+    container_name: metube
+    restart: unless-stopped
+    environment:
+      YTDL_OPTIONS: '{"cookiefile":"/cookies/cookies.txt"}'
+    networks:
+      - traefik-proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.metube.tls: true
+      traefik.http.routers.metube.tls.certresolver: cloudflare
+      traefik.http.routers.metube.entrypoints: http,https
+      traefik.http.routers.metube.rule: Host(`metube.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+
+      traefik.http.routers.metube.middlewares: default-security-headers@file
+      traefik.http.routers.metube.service: metube
+
+      traefik.http.services.metube.loadbalancer.server.port: 8081
+
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'github.com/alexta69/metube/releases/tag/$${major}.$${minor}.$${patch}'
+    volumes:
+      - ${DOWNLOADS_DIR:?DOWNLOADS_DIR is not set}:/downloads
+      - ${COOKIES_FILE:?COOKIES_FILE is not set}:/cookies/cookies.txt
