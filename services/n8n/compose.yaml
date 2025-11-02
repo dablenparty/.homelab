@@ -1,5 +1,5 @@
 x-ollama: &base-ollama
-  image: ollama/ollama:0.12.6
+  image: ollama/ollama:0.12.9
   user: ${OLLAMA_UID:-1000}:${OLLAMA_GID:-1000}
   devices:
     - /dev/nvidia-caps:/dev/nvidia-caps
@@ -46,7 +46,7 @@ services:
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
     environment:
-      OLLAMA_KEEP_ALIVE: 6h
+      OLLAMA_KEEP_ALIVE: 12h
     networks:
       - n8n-net
     ports:
@@ -99,7 +99,7 @@ services:
 
   n8n:
     # NOTE: this image already drops root perms
-    image: n8nio/n8n:1.116.2
+    image: n8nio/n8n:1.117.3
     container_name: n8n
     restart: unless-stopped
     depends_on:
