@@ -51,7 +51,7 @@ services:
         condition: service_healthy
     labels:
       wud.tag.include: '^v\d+\.\d+\.\d+$$'
-      wud.link.include: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
+      wud.link.template: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       - traefik-proxy
       - advisor-net
@@ -61,7 +61,7 @@ services:
       - /sys:/sys:ro
 
   valkey:
-    image: ghcr.io/valkey-io/valkey:8-alpine
+    image: ghcr.io/valkey-io/valkey:9-alpine
     container_name: cadvisor-valkey
     restart: unless-stopped
     healthcheck:
