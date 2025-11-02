@@ -82,7 +82,7 @@ services:
       - /run
 
   traefik:
-    image: traefik:v3.5.3
+    image: traefik:v3.5.4
     container_name: traefik
     restart: unless-stopped
     depends_on:
@@ -143,4 +143,4 @@ services:
       traefik.tls.option.default.alpnProtocols: 'http/1.1,h2,dot'
 
       wud.tag.include: '^v\d+\.\d+\.\d+$$'
-      wud.link.include: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
+      wud.link.template: 'https://github.com/traefik/traefik/releases/tag/v$${major}.$${minor}.$${patch}'
