@@ -16,7 +16,7 @@ volumes:
 services:
   valkey:
     container_name: searxng-valkey
-    image: ghcr.io/valkey-io/valkey:8-alpine
+    image: ghcr.io/valkey-io/valkey:9-alpine
     command: valkey-server --save 30 1 --loglevel warning
     restart: unless-stopped
     healthcheck:
@@ -41,7 +41,7 @@ services:
 
   searxng:
     container_name: searxng
-    image: ghcr.io/searxng/searxng:2025.10.4-7bf65d68c
+    image: ghcr.io/searxng/searxng:2025.11.1-0245327fc
     restart: unless-stopped
     user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
     healthcheck:
