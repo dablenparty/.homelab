@@ -36,8 +36,8 @@ http:
         stsSeconds: 3153600                              # Set the max-age of the Strict-Transport-Security header (63072000 = 2 years)
         contentSecurityPolicy: >
           default-src 'self' *.{{ env "BASE_DOMAIN" }};
-          img-src 'self' blob: data:;
-          font-src 'self';
+          img-src 'self' *.{{ env "BASE_DOMAIN" }} blob: data:;
+          font-src 'self' *.{{ env "BASE_DOMAIN" }};
         customRequestHeaders:
           X-Forwarded-Proto: https
     https-redirectscheme:
