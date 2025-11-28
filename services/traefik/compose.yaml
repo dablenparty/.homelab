@@ -82,7 +82,7 @@ services:
       - /run
 
   traefik:
-    image: traefik:v3.5.4
+    image: traefik:v3.6.2
     container_name: traefik
     restart: unless-stopped
     depends_on:
