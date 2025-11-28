@@ -126,7 +126,7 @@ services:
       traefik.http.routers.n8n.entrypoints: http,https
       traefik.http.routers.n8n.rule: Host(`${SUBDOMAIN:?SUBDOMAIN is not set}.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
 
-      traefik.http.routers.n8n.middlewares: default-security-headers@file
+      traefik.http.routers.n8n.middlewares: default-security-headers@file,strict-csp@file
       traefik.http.routers.n8n.service: n8n
 
       traefik.http.services.n8n.loadbalancer.server.port: 5678

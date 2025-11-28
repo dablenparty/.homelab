@@ -32,6 +32,8 @@ services:
       traefik.http.routers.13ft-secure.tls.certresolver: cloudflare
       traefik.http.routers.13ft-secure.service: 13ft
 
+      traefik.http.routers.13ft-secure.middlewares: default-security-headers@file,strict-csp@file
+
       traefik.http.services.13ft.loadbalancer.server.port: 5000
 
       wud.watch: false

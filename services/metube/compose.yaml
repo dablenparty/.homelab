@@ -20,7 +20,7 @@ services:
       traefik.http.routers.metube.entrypoints: http,https
       traefik.http.routers.metube.rule: Host(`metube.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
 
-      traefik.http.routers.metube.middlewares: default-security-headers@file
+      traefik.http.routers.metube.middlewares: default-security-headers@file,unsafe-csp@file
       traefik.http.routers.metube.service: metube
 
       traefik.http.services.metube.loadbalancer.server.port: 8081

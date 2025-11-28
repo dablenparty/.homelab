@@ -19,6 +19,6 @@ services:
 
       traefik.http.middlewares.upload-limit.buffering.maxRequestBodyBytes: 10000000000
 
-      traefik.http.routers.openspeedtest.middlewares: default-security-headers@file,upload-limit
+      traefik.http.routers.openspeedtest.middlewares: default-security-headers@file,strict-csp@file,upload-limit
 
       wud.tag.include: '^\d+\.\d+\.\d+$$'

@@ -23,6 +23,7 @@ services:
       traefik.http.routers.omni-tools.tls: true
       traefik.http.routers.omni-tools.tls.certresolver: cloudflare
       traefik.http.routers.omni-tools.service: omni-tools
+      traefik.http.routers.omni-tools.middlewares: default-security-headers@file,unsafe-csp@file
       traefik.http.services.omni-tools.loadbalancer.server.port: 80
       traefik.http.services.omni-tools.loadbalancer.healthcheck.path: /
 

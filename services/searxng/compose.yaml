@@ -71,6 +71,8 @@ services:
       traefik.http.services.searxng.loadbalancer.server.port: 8080
       traefik.http.services.searxng.loadbalancer.healthcheck.path: /healthz
 
+      traefik.http.routers.searxng.middlewares: default-security-headers@file,strict-csp@file
+
       wud.tag.include: '^(\d+\.\d+\.\d+)-.*$$'
       wud.tag.transform: '^(\d+\.\d+\.\d+)-.*$$ => $$1'
     environment:

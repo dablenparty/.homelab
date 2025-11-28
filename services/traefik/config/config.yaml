@@ -21,25 +21,43 @@ http:
           - url: 'https://host.docker.internal:8384/'
 
   middlewares:
+    unsafe-csp:
+      headers:
+        # no embeds still
+        contentSecurityPolicy: >
+          default-src https: data: blob:;
+          frame-ancestors 'none';
+          object-src 'none';
+          script-src 'self' *.{{ env "BASE_DOMAIN" }} 'unsafe-inline';
+          style-src 'self' *.{{ env "BASE_DOMAIN" }} 'unsafe-inline';
+    strict-csp:
+      headers:
+        contentSecurityPolicy: >
+          default-src 'self' *.{{ env "BASE_DOMAIN" }};
+          frame-ancestors 'none';
+          img-src 'self' *.{{ env "BASE_DOMAIN" }} blob: data:;
+          object-src 'none';
+          script-src 'self' *.{{ env "BASE_DOMAIN" }};
+          style-src 'self' *.{{ env "BASE_DOMAIN" }};
     default-security-headers:
       headers:
         browserXSSFilter: true
         customBrowserXSSValue: 0                            # X-XSS-Protection=1; mode=block
         contentTypeNosniff: true                          # X-Content-Type-Options=nosniff
         forceSTSHeader: true                              # Add the Strict-Transport-Security header even when the connection is HTTP
-        frameDeny: false                                   # X-Frame-Options=deny
+        frameDeny: false                                   # see below
         referrerPolicy: "strict-origin-when-cross-origin"
         SSLHost: {{env "BASE_DOMAIN"}}
         SSLRedirect: true
         stsIncludeSubdomains: true                        # Add includeSubdomains to the Strict-Transport-Security header
         stsPreload: true                                  # Add preload flag appended to the Strict-Transport-Security header
         stsSeconds: 3153600                              # Set the max-age of the Strict-Transport-Security header (63072000 = 2 years)
-        contentSecurityPolicy: >
-          default-src 'self' *.{{ env "BASE_DOMAIN" }};
-          img-src 'self' *.{{ env "BASE_DOMAIN" }} blob: data:;
-          font-src 'self' *.{{ env "BASE_DOMAIN" }};
+        hostsProxyHeaders:
+          - X-Forwarded-Host
         customRequestHeaders:
+          X-Frame-Options: sameorigin
           X-Forwarded-Proto: https
+          X-Robots-Tag: none,noarchive,nosnippet,notranslate,noimageindex,
     https-redirectscheme:
       redirectScheme:
         scheme: https

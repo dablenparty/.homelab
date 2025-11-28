@@ -34,6 +34,7 @@ services:
       traefik.http.routers.prometheus-secure.rule: Host(`prom.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
       traefik.http.routers.prometheus-secure.tls: true
       traefik.http.routers.prometheus-secure.tls.certresolver: cloudflare
+      traefik.http.routers.prometheus-secure.middlewares: default-security-headers@file,strict-csp@file
       traefik.http.routers.prometheus-secure.service: prometheus
 
       traefik.http.services.prometheus.loadbalancer.server.port: 9090
@@ -76,6 +77,7 @@ services:
       traefik.http.routers.grafana-secure.rule: Host(`grafana.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
       traefik.http.routers.grafana-secure.tls: true
       traefik.http.routers.grafana-secure.tls.certresolver: cloudflare
+      traefik.http.routers.grafana-secure.middlewares: default-security-headers@file,strict-csp@file
       traefik.http.routers.grafana-secure.service: grafana
 
       traefik.http.services.grafana.loadbalancer.server.port: 3000
