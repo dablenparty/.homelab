@@ -41,7 +41,7 @@ services:
 
   searxng:
     container_name: searxng
-    image: ghcr.io/searxng/searxng:2025.11.1-0245327fc
+    image: ghcr.io/searxng/searxng:2025.11.28-c4abf40e6
     restart: unless-stopped
     user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
     healthcheck:
