@@ -1,0 +1,101 @@
+networks:
+  docksock-proxy:
+    driver: bridge
+  caddy-proxy:
+    enable_ipv6: true
+    # prevent name mangling
+    name: caddy-proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.0.0/16
+  cloudflared:
+    name: cloudflared
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.2.0.0/16
+
+secrets:
+  cf-tunnel-token:
+    file: ./secrets/cf-tunnel-token
+
+services:
+  cloudflared:
+    container_name: cloudflared
+    pull_policy: always
+    restart: unless-stopped
+    image: cloudflare/cloudflared:latest
+    entrypoint: cloudflared
+    command: tunnel --no-autoupdate run
+    depends_on:
+      caddy:
+        condition: service_healthy
+    healthcheck:
+      # WARN: must use array syntax here, otherwise it won't work for some reason
+      test: [ "CMD", "cloudflared", "tunnel", "--metrics", "localhost:20241", "ready" ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+      start_interval: 3s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    secrets:
+      - cf-tunnel-token
+    environment:
+      TUNNEL_TOKEN_FILE: /run/secrets/cf-tunnel-token
+      TUNNEL_METRICS: 0.0.0.0:20241
+    networks:
+      - cloudflared
+      - caddy-proxy
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: caddy
+    restart: unless-stopped
+    healthcheck:
+      # modified from: https://stackoverflow.com/questions/47722898/how-can-i-make-a-docker-healthcheck-with-wget-instead-of-curl/47722899#47722899
+      test: wget --quiet --tries=1 --spider http://localhost:2019/metrics -O -
+      interval: 1m
+      timeout: 60s
+      retries: 5
+      start_period: 1m
+      start_interval: 1s
+    cap_add:
+      - NET_ADMIN
+    env_file: .env
+    environment:
+      - ACME_AGREE=true
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+      # admin port
+      - 2019:2019
+    volumes:
+      - caddy-config:/config
+      - caddy-data:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./certs:/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.${BASE_DOMAIN}
+    networks:
+      - caddy-proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  traefik-whoami:
+    image: traefik/whoami
+    depends_on:
+      caddy:
+        condition: service_healthy
+    networks:
+      - caddy-proxy
+
+volumes:
+  caddy-config:
+  caddy-data:
