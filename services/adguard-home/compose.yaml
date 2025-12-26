@@ -1,23 +1,23 @@
 networks:
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 secrets:
   le-cert:
-    file: ../traefik/certs/couchlab.me-cert.pem
+    file: ../caddy/certs/wildcard_.couchlab.me.crt
   le-key:
-    file: ../traefik/certs/couchlab.me-key.pem
+    file: ../caddy/certs/wildcard_.couchlab.me.key
 
 services:
   adguard-home:
-    image: adguard/adguardhome:v0.107.69
+    image: adguard/adguardhome:v0.107.71
     container_name: adguard-home
     restart: unless-stopped
     hostname: adguard
     # modified from a solution found here: https://github.com/AdguardTeam/AdGuardHome/issues/3290
     # AGH team claims healthchecks cause issues
     healthcheck:
-      test: nslookup adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set} 127.0.0.1 || exit 1
+      test: nslookup adguard-home.${BASE_DOMAIN:?BASE_DOMAIN is not set} 127.0.0.1 || exit 1
       interval: 60s
       timeout: 5s
       retries: 1
@@ -29,27 +29,9 @@ services:
       - le-cert
       - le-key
     networks:
-      traefik-proxy:
+      caddy-proxy:
         ipv4_address: 10.1.1.10
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-
-      traefik.http.routers.adguard-home.entrypoints: https
-      traefik.http.routers.adguard-home.middlewares: default-security-headers@file,strict-csp@file
-      traefik.http.routers.adguard-home.rule: Host(`adguard-home.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.adguard-home.tls: true
-      traefik.http.routers.adguard-home.tls.certresolver: cloudflare
-      traefik.http.routers.adguard-home.service: adguard-home
-      traefik.http.services.adguard-home.loadbalancer.server.port: 3000
-
-      # DNS over HTTPS
-      # NOTE: enable allow_unencrypted_doh in config
-      traefik.http.routers.adguard-doh.entrypoints: https
-      traefik.http.routers.adguard-doh.tls: true
-      traefik.http.routers.adguard-doh.service: adguard-doh
-      traefik.http.services.adguard-doh.loadbalancer.server.url: "https://adguard-home.${TRAEFIK_BASE_DOMAIN}/dns-query"
-
       wud.tag.include: '^v\d\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/AdguardTeam/AdGuardHome/releases/tag/v$${major}.$${minor}.$${patch}'
     ports:
@@ -77,7 +59,7 @@ services:
         condition: service_healthy
     env_file: exporter.env
     networks:
-      - traefik-proxy
+      - caddy-proxy
     labels:
       wud.tag.include: latest
       wud.watch.digest: true

@@ -1,5 +1,5 @@
 networks:
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 services:
@@ -8,17 +8,6 @@ services:
     container_name: openspeedtest
     restart: unless-stopped
     networks:
-      - traefik-proxy
+      - caddy-proxy
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-      traefik.http.routers.openspeedtest.tls: true
-      traefik.http.routers.openspeedtest.tls.certresolver: cloudflare
-      traefik.http.routers.openspeedtest.entrypoints: http,https
-      traefik.http.routers.openspeedtest.rule: Host(`openspeedtest.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-
-      traefik.http.middlewares.upload-limit.buffering.maxRequestBodyBytes: 10000000000
-
-      traefik.http.routers.openspeedtest.middlewares: default-security-headers@file,strict-csp@file,upload-limit
-
       wud.tag.include: '^\d+\.\d+\.\d+$$'

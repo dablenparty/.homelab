@@ -6,7 +6,7 @@
 networks:
   searxng:
     driver: bridge
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 volumes:
@@ -41,7 +41,7 @@ services:
 
   searxng:
     container_name: searxng
-    image: ghcr.io/searxng/searxng:2025.11.28-c4abf40e6
+    image: ghcr.io/searxng/searxng:2025.12.9-b719d559b
     restart: unless-stopped
     user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
     healthcheck:
@@ -50,33 +50,21 @@ services:
       timeout: 30s
       retries: 5
       start_period: 2m
-      start_interval: 5s
+      start_interval: 10s
     depends_on:
       valkey:
         condition: service_healthy
     networks:
-      - traefik-proxy
+      - caddy-proxy
       - searxng
     volumes:
       - ./config:/etc/searxng:rw
       - searxng-data:/var/cache/searxng:rw
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-      traefik.http.routers.searxng.entrypoints: https
-      traefik.http.routers.searxng.rule: Host(`searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.searxng.tls: true
-      traefik.http.routers.searxng.tls.certresolver: cloudflare
-      traefik.http.routers.searxng.service: searxng
-      traefik.http.services.searxng.loadbalancer.server.port: 8080
-      traefik.http.services.searxng.loadbalancer.healthcheck.path: /healthz
-
-      traefik.http.routers.searxng.middlewares: default-security-headers@file,strict-csp@file
-
       wud.tag.include: '^(\d+\.\d+\.\d+)-.*$$'
       wud.tag.transform: '^(\d+\.\d+\.\d+)-.*$$ => $$1'
     environment:
-      - SEARXNG_BASE_URL=https://searxng.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}/
+      - SEARXNG_BASE_URL=https://searxng.${BASE_DOMAIN:?BASE_DOMAIN is not set}/
       - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}
     logging:
       driver: 'json-file'

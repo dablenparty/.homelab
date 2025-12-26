@@ -1,5 +1,5 @@
 networks:
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 secrets:
@@ -13,7 +13,7 @@ secrets:
 services:
   # NOTE: install prometheus-node-exporter outside of docker
   prometheus:
-    image: prom/prometheus:v3.7.3
+    image: prom/prometheus:v3.8.0
     container_name: prometheus
     user: 1000:1000
     restart: unless-stopped
@@ -28,21 +28,10 @@ services:
       start_period: 30s
       start_interval: 1s
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-      traefik.http.routers.prometheus-secure.entrypoints: https
-      traefik.http.routers.prometheus-secure.rule: Host(`prom.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.prometheus-secure.tls: true
-      traefik.http.routers.prometheus-secure.tls.certresolver: cloudflare
-      traefik.http.routers.prometheus-secure.middlewares: default-security-headers@file,strict-csp@file
-      traefik.http.routers.prometheus-secure.service: prometheus
-
-      traefik.http.services.prometheus.loadbalancer.server.port: 9090
-
       wud.tag.include: '^v\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/prometheus/prometheus/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
-      - traefik-proxy
+      - caddy-proxy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     secrets:
@@ -65,23 +54,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - traefik-proxy
+      - caddy-proxy
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-      traefik.http.routers.grafana.entrypoints: http
-      traefik.http.routers.grafana.rule: Host(`grafana.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.middlewares.grafana-https-redirect.redirectscheme.scheme: https
-      traefik.http.routers.grafana.middlewares: grafana-https-redirect
-      traefik.http.routers.grafana-secure.entrypoints: https
-      traefik.http.routers.grafana-secure.rule: Host(`grafana.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.grafana-secure.tls: true
-      traefik.http.routers.grafana-secure.tls.certresolver: cloudflare
-      traefik.http.routers.grafana-secure.middlewares: default-security-headers@file,strict-csp@file
-      traefik.http.routers.grafana-secure.service: grafana
-
-      traefik.http.services.grafana.loadbalancer.server.port: 3000
-
       wud.tag.include: '^v\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/grafana/grafana/releases/tag/v$${major}.$${minor}.$${patch}'
     secrets:

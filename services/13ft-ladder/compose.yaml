@@ -1,5 +1,5 @@
 networks:
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 services:
@@ -18,22 +18,6 @@ services:
       context: ./patched-fork
     restart: unless-stopped
     networks:
-      - traefik-proxy
+      - caddy-proxy
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-      traefik.http.routers.13ft.entrypoints: http
-      traefik.http.routers.13ft.rule: Host(`13ft.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.middlewares.13ft-https-redirect.redirectscheme.scheme: https
-      traefik.http.routers.13ft.middlewares: 13ft-https-redirect
-      traefik.http.routers.13ft-secure.entrypoints: https
-      traefik.http.routers.13ft-secure.rule: Host(`13ft.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.13ft-secure.tls: true
-      traefik.http.routers.13ft-secure.tls.certresolver: cloudflare
-      traefik.http.routers.13ft-secure.service: 13ft
-
-      traefik.http.routers.13ft-secure.middlewares: default-security-headers@file,strict-csp@file
-
-      traefik.http.services.13ft.loadbalancer.server.port: 5000
-
       wud.watch: false

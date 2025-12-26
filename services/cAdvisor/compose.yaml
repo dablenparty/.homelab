@@ -1,7 +1,7 @@
 networks:
   advisor-net:
     driver: bridge
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 services:
@@ -53,7 +53,7 @@ services:
       wud.tag.include: '^v\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
-      - traefik-proxy
+      - caddy-proxy
       - advisor-net
     volumes:
       - /:/rootfs:ro

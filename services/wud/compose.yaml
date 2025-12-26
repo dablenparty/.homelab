@@ -1,7 +1,7 @@
 networks:
   wud-net:
     driver: bridge
-  traefik-proxy:
+  caddy-proxy:
     external: true
 
 secrets:
@@ -67,21 +67,10 @@ services:
       WUD_WATCHER_DOCKER_PORT: 2375
       WUD_WATCHER_DOCKER_SOCKET: tcp://wud-socket-proxy
     labels:
-      traefik.enable: true
-      traefik.docker.network: traefik-proxy
-      traefik.http.routers.wud.entrypoints: https
-      traefik.http.routers.wud.middlewares: default-security-headers@file,strict-csp@file
-      traefik.http.routers.wud.rule: Host(`wud.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.wud.tls: true
-      traefik.http.routers.wud.tls.certresolver: cloudflare
-      traefik.http.routers.wud.service: wud
-
-      traefik.http.services.wud.loadbalancer.server.port: 3000
-
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}'
     networks:
-      - traefik-proxy
+      - caddy-proxy
       - wud-net
     secrets:
       - codeberg-username

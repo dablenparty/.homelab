@@ -1,0 +1,64 @@
+networks:
+  wg:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.42.42.0/24
+        - subnet: fdcc:ad94:bacf:61a3::/64
+  traefik-proxy:
+    external: true
+
+services:
+  wg-easy:
+    #environment:
+    #  Optional:
+    #  - PORT=51821
+    #  - HOST=0.0.0.0
+    #  - INSECURE=false
+
+    image: ghcr.io/wg-easy/wg-easy:15.1.0
+    container_name: wg-easy
+    restart: unless-stopped
+    environment:
+      # WG_DEVICE: wgeth0
+      WG_HOST: wgvpn.${TRAEFIK_BASE_DOMAIN}
+      WG_DEFAULT_DNS: 10.1.1.10
+      WG_DEFAULT_ADDRESS: 10.1.x.x
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.default.forwarding=1
+    ports:
+      - "51820:51820/udp"
+      - "51821:51821/tcp"
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik-proxy
+      traefik.http.routers.wg-easy.entrypoints: https
+      traefik.http.routers.wg-easy.rule: Host(`wg-easy.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
+      traefik.http.routers.wg-easy.tls: true
+      traefik.http.routers.wg-easy.tls.certresolver: cloudflare
+      traefik.http.routers.wg-easy.service: wg-easy
+
+      traefik.http.services.wg-easy.loadbalancer.server.port: 51821
+
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      # TODO:
+      # wud.link.template: 'https://codeberg.org/wg-easy/wg-easy/src/branch/wg-easy/release-notes-published/$${major}.$${minor}.$${patch}.md'
+    networks:
+      wg:
+        ipv4_address: 10.42.42.42
+        ipv6_address: fdcc:ad94:bacf:61a3::2a
+        # driver_opts:
+        #   com.docker.network.endpoint.ifname: wgeth0
+      traefik-proxy: {}
+    volumes:
+      - ${WG_CONFIG_DIR:?WG_CONFIG_DIR is not set}:/etc/wireguard
+      - /lib/modules:/lib/modules:ro

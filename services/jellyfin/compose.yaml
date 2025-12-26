@@ -1,6 +1,6 @@
 services:
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:10.11.3
+    image: lscr.io/linuxserver/jellyfin:10.11.4
     container_name: jellyfin
     restart: unless-stopped
     runtime: nvidia
@@ -29,34 +29,6 @@ services:
       - /dev/nvidia-uvm:/dev/nvidia-uvm
       - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     labels:
-      traefik.enable: true
-      traefik.http.routers.jellyfin.entrypoints: https
-      traefik.http.routers.jellyfin.rule: Host(`jellyfin.${TRAEFIK_BASE_DOMAIN:?TRAEFIK_BASE_DOMAIN is not set}`)
-      traefik.http.routers.jellyfin.tls: true
-      traefik.http.routers.jellyfin.tls.certresolver: cloudflare
-
-      traefik.http.middlewares.jellyfin-mw.headers.customResponseHeaders.X-Robots-Tag: noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
-      traefik.http.middlewares.jellyfin-mw.headers.SSLRedirect: true
-      traefik.http.middlewares.jellyfin-mw.headers.SSLHost: jellyfin.${TRAEFIK_BASE_DOMAIN}
-      traefik.http.middlewares.jellyfin-mw.headers.SSLForceHost: true
-      traefik.http.middlewares.jellyfin-mw.headers.STSSeconds: 315360000
-      traefik.http.middlewares.jellyfin-mw.headers.STSIncludeSubdomains: true
-      traefik.http.middlewares.jellyfin-mw.headers.STSPreload: true
-      traefik.http.middlewares.jellyfin-mw.headers.forceSTSHeader: true
-      traefik.http.middlewares.jellyfin-mw.headers.frameDeny: true
-      traefik.http.middlewares.jellyfin-mw.headers.contentTypeNosniff: true
-      traefik.http.middlewares.jellyfin-mw.headers.customresponseheaders.X-XSS-PROTECTION: 1
-      traefik.http.middlewares.jellyfin-mw.headers.customFrameOptionsValue: 'allow-from https://${TRAEFIK_BASE_DOMAIN}'
-      # from: https://jellyfin.org/docs/general/post-install/networking/reverse-proxy/nginx
-      traefik.http.middlewares.jellyfin-mw.headers.contentSecurityPolicy: "default-src https: data: blob: ; img-src 'self' https://* ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.youtube.com blob:; worker-src 'self' blob:; connect-src 'self'; object-src 'none'; font-src 'self';"
-
-      traefik.http.routers.jellyfin.middlewares: jellyfin-mw
-      traefik.http.routers.jellyfin.service: jellyfin
-
-      traefik.http.services.jellyfin.loadbalancer.passHostHeader: true
-      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
-      traefik.http.services.jellyfin.loadbalancer.healthcheck.path: /health
-
       wud.tag.include: '^(version-)?(\d+\.\d+\.\d+)(.*)$$'
       # exclude tags that:
       # - start with a date (YYYY-MM-dd)
