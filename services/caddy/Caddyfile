@@ -127,9 +127,9 @@
 			X-XSS-Protection 1
 		}
 
-		reverse_proxy http://host.docker.internal:8096 {
+		reverse_proxy http://{$BBG_IP}:8096 {
 			health_uri /health
-			health_interval 5s
+			health_interval 1m
 			health_timeout 10s
 			health_status 2xx
 		}
@@ -254,11 +254,24 @@
 		}
 	}
 
-	@syncthing host syncthing.{$BASE_DOMAIN}
-	handle @syncthing {
+	@syncthing-fangbox host syncthing-fangbox.{$BASE_DOMAIN}
+	handle @syncthing-fangbox {
 		import default-headers
 
 		reverse_proxy https://host.docker.internal:8384 {
+			transport http {
+				tls_insecure_skip_verify
+			}
+			header_up Host {upstream_hostport}
+		}
+	}
+
+	@syncthing-bbg host syncthing-bbg.{$BASE_DOMAIN}
+	handle @syncthing-bbg {
+		import default-headers
+
+		reverse_proxy https://{$BBG_IP}:8384 {
+    # make sure tls is enabled in syncthing config!
 			transport http {
 				tls_insecure_skip_verify
 			}

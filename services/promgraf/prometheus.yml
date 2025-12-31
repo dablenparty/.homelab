@@ -22,10 +22,6 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: traefik
-    static_configs:
-      - targets: ['traefik:8080']
-
   - job_name: wud
     static_configs:
       - targets: ['wud:3000']
