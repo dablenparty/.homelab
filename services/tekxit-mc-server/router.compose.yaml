@@ -1,0 +1,7 @@
+services:
+  router:
+    image: ghcr.io/itzg/mc-router:1.38.2
+    environment:
+      MAPPING: |
+        tekxit4.couchlab.me=bbg.internal:25565
+    network_mode: host
