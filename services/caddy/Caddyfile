@@ -38,10 +38,10 @@
 (unsafe-csp) {
 	header {
 		Content-Security-Policy "
-          default-src https: data: blob:;
+          default-src 'self' *.{$BASE_DOMAIN} https: data: blob:;
           frame-ancestors 'none';
           object-src 'none';
-          script-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline';
+          script-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline' 'unsafe-eval';
           style-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline';
       "
 	}
@@ -182,7 +182,7 @@
 	@grafana host grafana.{$BASE_DOMAIN}
 	handle @grafana {
 		import default-headers
-		import strict-csp
+		import unsafe-csp
 
 		reverse_proxy http://grafana:3000
 	}
