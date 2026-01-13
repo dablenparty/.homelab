@@ -65,3 +65,4 @@ services:
     # NOTE: I highly recommend putting this on an SSD
     volumes:
       - ${GRAFANA_DATA_DIR:?GRAFANA_DATA_DIR is not set}:/var/lib/grafana
+      - ./grafana.ini:/etc/grafana/grafana.ini
