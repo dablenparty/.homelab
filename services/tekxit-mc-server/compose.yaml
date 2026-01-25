@@ -24,7 +24,7 @@ secrets:
 
 services:
   lazymc:
-    image: ghcr.io/joesturge/lazymc-docker-proxy:v2.7.3
+    image: ghcr.io/joesturge/lazymc-docker-proxy:v2.7.4
     networks:
       minecraft-network:
         ipv4_address: 10.64.0.2
@@ -43,7 +43,7 @@ services:
       - 25565:${MC_PORT:-25565}
 
   mc:
-    image: ghcr.io/itzg/minecraft-server:2025.10.1-java17
+    image: ghcr.io/itzg/minecraft-server:2026.1.1-java25
     user: "1000"
     tty: true
     stdin_open: true
@@ -92,7 +92,7 @@ services:
       OPS: |
         ${OWNER_PLAYER_NAME:?OWNER_PLAYER_NAME is not set}
       RCON_PASSWORD_FILE: /run/secrets/rcon-passwd
-      TZ: "America/New_York"
+      TZ: ${TZ:-Etc/UTC}
       USE_AIKAR_FLAGS: "true"
       VIEW_DISTANCE: ${VIEW_DISTANCE:-16}
       WHITELIST: |
