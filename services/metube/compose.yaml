@@ -5,7 +5,7 @@ networks:
 services:
   # FIXME: healthcheck
   metube:
-    image: ghcr.io/alexta69/metube:2025.12.09
+    image: ghcr.io/alexta69/metube:2026.01.11
     container_name: metube
     restart: unless-stopped
     environment:
@@ -15,7 +15,7 @@ services:
     labels:
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       # this is just a JS string template so JS functions work as expected
-      wud.link.template: 'https://github.com/alexta69/metube/releases/tag/$${major}.$${minor}.$${patch.toString().padStart(2, "0")}'
+      wud.link.template: 'https://github.com/alexta69/metube/releases/tag/$${major}.$${minor.toString().padStart(2, "0")}.$${patch.toString().padStart(2, "0")}'
     volumes:
       - ${DOWNLOADS_DIR:?DOWNLOADS_DIR is not set}:/downloads
       - ${COOKIES_FILE:?COOKIES_FILE is not set}:/cookies/cookies.txt
