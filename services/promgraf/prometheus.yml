@@ -9,6 +9,10 @@ scrape_configs:
     static_configs:
       - targets: ['adguard-exporter:9618']
 
+  - job_name: caddy
+    static_configs:
+      - targets: ['caddy:2019']
+
   - job_name: cAdvisor
     metric_relabel_configs:
       - source_labels: ['container_label_com_docker_swarm_service_name']
@@ -16,7 +20,7 @@ scrape_configs:
       - source_labels: ['name']
         target_label: 'container'
     static_configs:
-      - targets: ['cadvisor:8080']
+      - targets: ['cadvisor:8080', 'bbg.internal:8080']
 
   - job_name: prometheus
     static_configs:
@@ -29,5 +33,5 @@ scrape_configs:
   - job_name: node
     scrape_interval: 5s
     static_configs:
-      - targets: ['host.docker.internal:9100', 'white-lotus.internal:9100']
+      - targets: ['host.docker.internal:9100', 'white-lotus.internal:9100', 'bbg.internal:9100']
 
