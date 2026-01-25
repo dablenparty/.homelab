@@ -1,6 +1,8 @@
 {
 	admin 0.0.0.0:2019
 
+	metrics
+
 	servers {
 		client_ip_headers X-Forwarded-For X-Real-IP
 
@@ -101,7 +103,7 @@
 
 		reverse_proxy http://forgejo-server:3000 {
 			health_uri /api/healthz
-			health_interval 5s
+			health_interval 1m
 			health_timeout 10s
 			health_status 2xx
 		}
@@ -148,7 +150,14 @@
 		import default-headers
 		import strict-csp
 
-		reverse_proxy http://n8n:5678
+		reverse_proxy http://{$BBG_IP}:5678 {
+			flush_interval -1
+
+			health_uri /healthz
+			health_interval 1m
+			health_timeout 10s
+			health_status 2xx
+		}
 	}
 
 	@omni-tools host omni-tools.{$BASE_DOMAIN}
@@ -227,7 +236,7 @@
 			# enable HSTS
 			# WARNING: Once this value is set, the site must continue to support HTTPS until the expiry time is reached.
 
-			# Strict-Transport-Security max-age=15768000;
+			Strict-Transport-Security max-age=15768000;
 
 			# Remove "Server" header
 			-Server
@@ -248,7 +257,7 @@
 		# SearXNG
 		reverse_proxy http://searxng:8080 {
 			health_uri /healthz
-			health_interval 5s
+			health_interval 1m
 			health_timeout 10s
 			health_status 2xx
 		}
@@ -271,7 +280,7 @@
 		import default-headers
 
 		reverse_proxy https://{$BBG_IP}:8384 {
-    # make sure tls is enabled in syncthing config!
+			# make sure tls is enabled in syncthing config!
 			transport http {
 				tls_insecure_skip_verify
 			}
