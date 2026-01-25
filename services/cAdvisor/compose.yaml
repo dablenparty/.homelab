@@ -17,7 +17,7 @@ services:
       start_interval: 1s
     environment:
       CONTAINERS: 1
-      # IMAGES: 1
+      IMAGES: 1
       INFO: 1
       # NETWORKS: 1
       # VOLUMES: 1
@@ -35,7 +35,7 @@ services:
       - /run
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:v0.53.0
+    image: ghcr.io/google/cadvisor:0.56.2
     container_name: cadvisor
     privileged: true
     restart: unless-stopped
