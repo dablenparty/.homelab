@@ -63,9 +63,14 @@ services:
 
       WUD_TRIGGER_HTTP_N8N_URL: ${N8N_WEBHOOK_URL:?N8N_WEBHOOK_URL is not set}
 
-      WUD_WATCHER_DOCKER_HOST: wud-socket-proxy
-      WUD_WATCHER_DOCKER_PORT: 2375
-      WUD_WATCHER_DOCKER_SOCKET: tcp://wud-socket-proxy
+      WUD_WATCHER_FANGBOX_HOST: wud-socket-proxy
+      WUD_WATCHER_FANGBOX_PORT: 2375
+      WUD_WATCHER_FANGBOX_SOCKET: tcp://wud-socket-proxy
+      WUD_WATCHER_FANGBOX_CRON: '0 */8 * * *'
+
+      WUD_WATCHER_BBG_HOST: ${BBG_HOST:?BBG_HOST is not set}
+      WUD_WATCHER_BBG_PORT: 2375
+      WUD_WATCHER_BBG_CRON: '0 */8 * * *'
     labels:
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}'
