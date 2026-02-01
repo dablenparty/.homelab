@@ -50,18 +50,14 @@
 }
 
 *.{$BASE_DOMAIN} {
-	vars {
-		auth_token c96a452527a9d887e30ee9fde1c9256edf857a054fe5d72e79cddc0fbe7074ef
-	}
-
 	tls {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 		propagation_delay 2m
 		resolvers 1.1.1.1
 	}
 
-	handle_path /{http.vars.auth_token}* {
-		uri strip_prefix /{http.vars.auth_token}
+	handle_path /{$AGH_AUTH_TOKEN}* {
+		uri strip_prefix /{$AGH_AUTH_TOKEN}
 		handle /dns-query* {
 			reverse_proxy https://adguard-home:443 {
 				transport http {
