@@ -63,7 +63,7 @@ services:
       # modified from: https://stackoverflow.com/questions/47722898/how-can-i-make-a-docker-healthcheck-with-wget-instead-of-curl/47722899#47722899
       test: wget --quiet --tries=1 --spider http://localhost:2019/metrics -O -
       interval: 1m
-      timeout: 60s
+      timeout: 20s
       retries: 5
       start_period: 1m
       start_interval: 1s
@@ -77,11 +77,12 @@ services:
       - 443:443
       - 443:443/udp
       # admin port
-      - 2019:2019
+      - "127.0.0.1:2019:2019"
     volumes:
       - caddy-config:/config
       - caddy-data:/data
       - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy-confs:/etc/caddy/caddy-confs
       - ./certs:/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.${BASE_DOMAIN}
     networks:
       - caddy-proxy

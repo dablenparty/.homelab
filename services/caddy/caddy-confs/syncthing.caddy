@@ -1,0 +1,11 @@
+@syncthing-{args[0]} host syncthing-{args[0]}.{$BASE_DOMAIN}
+handle @syncthing-{args[0]} {
+  import default-headers
+
+  reverse_proxy https://{args[1]}:{args[2]} {
+    transport http {
+      tls_insecure_skip_verify
+    }
+    header_up Host {upstream_hostport}
+  }
+}

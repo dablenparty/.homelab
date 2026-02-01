@@ -1,0 +1,27 @@
+handle_path /{$AGH_AUTH_TOKEN}* {
+  uri strip_prefix /{$AGH_AUTH_TOKEN}
+  handle /dns-query* {
+    reverse_proxy https://adguard-home:443 {
+      transport http {
+        tls_insecure_skip_verify
+      }
+
+      # For proper client IP tracking:
+      header_up Host {upstream_hostport}
+      header_up X-Real-IP {http.request.remote.host}
+    }
+  }
+
+  handle {
+    # Requests with valid token but invalid path
+    respond "Invalid request" 400
+  }
+}
+
+@agh host adguard-home.{$BASE_DOMAIN}
+handle @agh {
+  import default-headers
+  import strict-csp
+
+  reverse_proxy http://adguard-home:3000
+}

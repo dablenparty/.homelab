@@ -1,0 +1,12 @@
+@forgejo host forgejo.{$BASE_DOMAIN}
+handle @forgejo {
+  import default-headers
+  import unsafe-csp
+
+  reverse_proxy http://{args[0]}:{args[1]} {
+    health_uri /api/healthz
+    health_interval 1m
+    health_timeout 10s
+    health_status 2xx
+  }
+}

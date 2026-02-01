@@ -1,0 +1,66 @@
+@searxng host searxng.{$BASE_DOMAIN}
+handle @searxng {
+  import default-headers
+
+  encode zstd gzip
+
+  @api {
+    path /config
+    path /healthz
+    path /stats/errors
+    path /stats/checker
+  }
+
+  @static {
+    path /static/*
+  }
+
+  @imageproxy {
+    path /image_proxy
+  }
+
+  header {
+    # CSP (https://content-security-policy.com)
+    Content-Security-Policy "upgrade-insecure-requests; default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; form-action 'self' https:; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; connect-src 'self'; img-src * data:; frame-src https:;"
+
+    # Disable browser features
+    Permissions-Policy "accelerometer=(),camera=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),payment=(),usb=()"
+
+    # Only allow same-origin requests
+    Referrer-Policy "same-origin"
+
+    # Prevent MIME type sniffing from the declared Content-Type
+    X-Content-Type-Options "nosniff"
+
+    # Comment header to allow indexing by search engines
+    X-Robots-Tag "noindex, nofollow, noarchive, nositelinkssearchbox, nosnippet, notranslate, noimageindex"
+
+    # enable HSTS
+    # WARNING: Once this value is set, the site must continue to support HTTPS until the expiry time is reached.
+
+    Strict-Transport-Security max-age=15768000;
+
+    # Remove "Server" header
+    -Server
+  }
+
+  header @api {
+    Access-Control-Allow-Methods "GET, OPTIONS"
+    Access-Control-Allow-Origin "*"
+  }
+
+  route {
+    # Cache policy
+    header Cache-Control "no-cache"
+    header @static Cache-Control "public, max-age=30, stale-while-revalidate=60"
+    header @imageproxy Cache-Control "public, max-age=3600"
+  }
+
+  # SearXNG
+  reverse_proxy http://{args[0]}:{args[1]} {
+    health_uri /healthz
+    health_interval 1m
+    health_timeout 10s
+    health_status 2xx
+  }
+}

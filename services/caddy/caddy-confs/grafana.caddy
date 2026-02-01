@@ -1,0 +1,7 @@
+@grafana host grafana.{$BASE_DOMAIN}
+handle @grafana {
+  import default-headers
+  import unsafe-csp
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

@@ -1,0 +1,6 @@
+@whoami host whoami.{$BASE_DOMAIN}
+handle @whoami {
+  import default-headers
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

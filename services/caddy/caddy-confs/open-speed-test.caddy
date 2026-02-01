@@ -1,0 +1,11 @@
+@open-speed-test host openspeedtest.{$BASE_DOMAIN}
+handle @open-speed-test {
+  import default-headers
+  import strict-csp
+
+  request_body {
+    max_size 10GB
+  }
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

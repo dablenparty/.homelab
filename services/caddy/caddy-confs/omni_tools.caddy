@@ -1,0 +1,7 @@
+@omni-tools host omni-tools.{$BASE_DOMAIN}
+handle @omni-tools {
+  import default-headers
+  import unsafe-csp
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}
