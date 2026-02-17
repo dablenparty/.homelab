@@ -1,0 +1,19 @@
+# Maintainer: Hunter Davenport <mallow.boxes6w@icloud.com>
+
+pkgname='rcon-cli-bin'
+_pkgname='rcon-cli'
+pkgver=1.7.1
+pkgrel=1
+pkgdesc='A Rust-based alternative to GNU stow'
+url='https://github.com/itzg/rcon-cli'
+license=('Apache 2.0')
+depends=()
+arch=('x86_64')
+source=("${_pkgname}-${pkgver}.tar.gz::${url}/releases/download/${pkgver}/${_pkgname}_${pkgver}_linux_amd64.tar.gz")
+provides=('rcon-cli')
+sha256sums=('6881341879ffe3d160e9cdbd0535f3af69b4f248aefa0f5002285394ba86b3cf')
+
+package() {
+  install -Dm755 "$srcdir/rcon-cli" "$pkgdir/usr/bin/$_pkgname"
+  install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

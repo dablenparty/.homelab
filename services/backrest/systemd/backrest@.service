@@ -1,0 +1,16 @@
+[Unit]
+Description=Backrest Service for %I.
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=exec
+User=%i
+Restart=on-failure
+Environment=BACKREST_RESTIC_COMMAND=/usr/bin/restic
+Environment=BACKREST_PORT=0.0.0.0:9898
+EnvironmentFile=/usr/local/lib/systemd/system/backrest.env
+ExecStart=/usr/bin/backrest
+
+[Install]
+WantedBy=multi-user.target
