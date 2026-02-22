@@ -44,6 +44,7 @@ services:
 
   mc:
     image: ghcr.io/itzg/minecraft-server:2026.1.1-java25
+    container_name: tekxit-mc-server
     user: "1000"
     tty: true
     stdin_open: true
@@ -54,6 +55,8 @@ services:
     restart: no
     ports:
       - "127.0.0.1:25575:25575"
+      # prometheus metrics
+      - 19565:19565
     labels:
       # Enable lazymc on this container
       lazymc.enabled: true
