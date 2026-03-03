@@ -29,6 +29,7 @@ services:
       - /dev/nvidia-uvm:/dev/nvidia-uvm
       - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     labels:
+      wud.watch.digest: false
       wud.tag.include: '^(version-)?(\d+\.\d+\.\d+)(.*)$$'
       # exclude tags that:
       # - start with a date (YYYY-MM-dd)
@@ -37,7 +38,7 @@ services:
       # - end with an Ubuntu version identifier (e.g. ubu2404)
       #   - not ALL ubuntu tags are ignored, just most
       # - end with an lsio version identifier (e.g. ls305)
-      wud.tag.exclude: '^((20\d{2}\.\d{1,2}\.\d{1,2})|((amd|arm)64(v8)?-)?((latest|nightly)-?)(version-)?(\d+(\.\d+\.\d+)?(ubu\d+(-ls\d+)?))?)$$'
+      wud.tag.exclude: '^((20\d{2}\.?\d{1,2}\.?\d{1,2})|((amd|arm)64(v8)?-)?((latest|nightly|unstable)-?)?(version-)?(\d+(\.\d+\.\d+)?((-(amd|arm)64(v8)?)?\.(\d+-?)+|ubu\d+(-ls\d+)?))?)$$'
       # extract the major, minor, and patch from the allowable patterns, e.g.:
       # - version-10.11.0ubu2404
       # - version-10.11.0
