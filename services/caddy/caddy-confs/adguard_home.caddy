@@ -23,5 +23,5 @@ handle @agh {
   import default-headers
   import strict-csp
 
-  reverse_proxy http://adguard-home:3000
+  reverse_proxy http://{args[0]}:{args[1]}
 }
