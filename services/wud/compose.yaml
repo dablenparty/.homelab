@@ -5,10 +5,6 @@ networks:
     external: true
 
 secrets:
-  codeberg-username:
-    file: ./secrets/codeberg-username
-  codeberg-password:
-    file: ./secrets/codeberg-password
   lscr-private-username:
     file: ./secrets/lscr-private-username
   lscr-private-token:
@@ -43,7 +39,7 @@ services:
       - /run
 
   whatsupdocker:
-    image: ghcr.io/getwud/wud:8.1.1
+    image: ghcr.io/getwud/wud:8.2.2
     container_name: wud
     restart: unless-stopped
     depends_on:
@@ -52,14 +48,6 @@ services:
     environment:
       WUD_REGISTRY_LSCR_PUBLIC_USERNAME__FILE: /run/secrets/lscr-private-username
       WUD_REGISTRY_LSCR_PUBLIC_TOKEN__FILE: /run/secrets/lscr-private-token
-
-      WUD_REGISTRY_FORGEJO_CODEBERG_URL: https://codeberg.org
-      WUD_REGISTRY_FORGEJO_CODEBERG_LOGIN__FILE: /run/secrets/codeberg-username
-      WUD_REGISTRY_FORGEJO_CODEBERG_PASSWORD__FILE: /run/secrets/codeberg-password
-
-      WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_URL: https://code.forgejo.org
-      WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_LOGIN__FILE: /run/secrets/codeberg-username
-      WUD_REGISTRY_FORGEJO_CODEBERGMIRROR_PASSWORD__FILE: /run/secrets/codeberg-password
 
       WUD_TRIGGER_HTTP_N8N_URL: ${N8N_WEBHOOK_URL:?N8N_WEBHOOK_URL is not set}
 
@@ -78,7 +66,5 @@ services:
       - caddy-proxy
       - wud-net
     secrets:
-      - codeberg-username
-      - codeberg-password
       - lscr-private-token
       - lscr-private-username
