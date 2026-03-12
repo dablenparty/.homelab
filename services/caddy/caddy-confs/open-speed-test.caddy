@@ -1,7 +1,14 @@
 @open-speed-test host openspeedtest.{$BASE_DOMAIN}
 handle @open-speed-test {
   import default-headers
-  import strict-csp
+
+	header {
+		Content-Security-Policy "
+          default-src 'self' *.{$BASE_DOMAIN} https: data: blob:;
+          script-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline' 'unsafe-eval';
+          style-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline';
+      "
+	}
 
   request_body {
     max_size 10GB
