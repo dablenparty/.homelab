@@ -1,7 +1,11 @@
 services:
   router:
-    image: ghcr.io/itzg/mc-router:1.38.2
+    image: ghcr.io/itzg/mc-router:1.41.0
+    restart: unless-stopped
     environment:
       MAPPING: |
         tekxit4.couchlab.me=bbg.internal:25565
     network_mode: host
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/itzg/mc-router/releases/tag/v$${major}.$${minor}.$${patch}'
