@@ -7,7 +7,7 @@
 
 x-forgejo-server: &base-forgejo-server
     # NOTE: I can't get the -rootless versions to work, especially with the runner
-    image: codeberg.org/forgejo/forgejo:14.0.1
+    image: codeberg.org/forgejo/forgejo:14.0.3
     healthcheck:
       test: curl -fSs http://localhost:3000/api/healthz
       interval: 10s
@@ -21,7 +21,7 @@ x-forgejo-server: &base-forgejo-server
       - /etc/localtime:/etc/localtime:ro
 
 x-forgejo-runner: &base-forgejo-runner
-    image: code.forgejo.org/forgejo/runner:12.6.1
+    image: code.forgejo.org/forgejo/runner:12.7.2
     networks:
       - forgejo-net
     volumes:
