@@ -1,7 +1,7 @@
 @wud host wud.{$BASE_DOMAIN}
 handle @wud {
   import default-headers
-  import strict-csp
+  import unsafe-csp
 
   reverse_proxy http://{args[0]}:{args[1]}
 }
