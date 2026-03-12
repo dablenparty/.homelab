@@ -1,0 +1,7 @@
+@backrest host backrest.{$BASE_DOMAIN}
+handle @backrest {
+  import default-headers
+  import unsafe-csp
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

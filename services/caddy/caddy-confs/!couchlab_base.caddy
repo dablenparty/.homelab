@@ -4,6 +4,7 @@
 
 	import /etc/caddy/caddy-confs/13ft.caddy 13ft 5000
 	import /etc/caddy/caddy-confs/adguard_home.caddy adguard-home 3000
+	import /etc/caddy/caddy-confs/backrest.caddy {$BBG_IP} 9898
 	import /etc/caddy/caddy-confs/forgejo.caddy forgejo-server 3000
 	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096
 	import /etc/caddy/caddy-confs/metube.caddy metube 8081
