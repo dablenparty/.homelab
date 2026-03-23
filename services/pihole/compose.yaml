@@ -1,0 +1,83 @@
+networks:
+  caddy-proxy:
+    external: true
+  pi-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.91.0.0/24
+
+secrets:
+  https-cert:
+    file: ./secrets/tls.pem
+  webserver-password:
+    file: ./secrets/webserver-password
+
+# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
+services:
+  pihole:
+    container_name: pihole
+    hostname: pihole
+    image: ghcr.io/pi-hole/pihole:2026.02.0
+    restart: unless-stopped
+    secrets:
+      - https-cert
+      - webserver-password
+    networks:
+      pi-net:
+        ipv4_address: 10.91.0.91
+      caddy-proxy:
+        ipv4_address: 10.1.1.10
+    ports:
+      # DNS Ports
+      - "53:53/tcp"
+      - "53:53/udp"
+      # Default HTTP Port
+      # - "80:80/tcp"
+      # Default HTTPs Port. FTL will generate a self-signed certificate
+      # - "443:443/tcp"
+      # Uncomment the line below if you are using Pi-hole as your DHCP server
+      #- "67:67/udp"
+      # Uncomment the line below if you are using Pi-hole as your NTP server
+      #- "123:123/udp"
+    environment:
+      # Set the appropriate timezone for your location (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g:
+      TZ: ${TZ:?TZ is not set}
+      # Set a password to access the web interface. Not setting one will result in a random password being assigned
+      WEBPASSWORD_FILE: webserver-password
+      # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
+      FTLCONF_dns_listeningMode: 'ALL'
+      FTLCONF_dns_upstreams: 'unbound-dns#5053'
+      FTLCONF_webserver_tls_cert: /run/secrets/https-cert
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      # this is just a JS string template so JS functions work as expected
+      wud.link.template: 'https://github.com/pi-hole/docker-pi-hole/releases/tag/$${major}.$${minor.toString().padStart(2, "0")}.$${patch}'
+    # Volumes store your data between container upgrades
+    volumes:
+      # For persisting Pi-hole's databases and common configuration file
+      - '${PIHOLE_CONFIG_DIR:?PIHOLE_CONFIG_DIR is not set}/pihole:/etc/pihole'
+      # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most starting fresh with Pi-hole v6. If you're upgrading from v5 you and have used this directory before, you should keep it enabled for the first v6 container start to allow for a complete migration. It can be removed afterwards. Needs environment variable FTLCONF_misc_etc_dnsmasq_d: 'true'
+      - '${PIHOLE_CONFIG_DIR:?PIHOLE_CONFIG_DIR is not set}/dnsmasq:/etc/dnsmasq.d'
+    cap_add:
+      # See https://docs.pi-hole.net/docker/#note-on-capabilities
+      # Required if you are using Pi-hole as your DHCP server, else not needed
+      - NET_ADMIN
+      # Required if you are using Pi-hole as your NTP client to be able to set the host's system time
+      - SYS_TIME
+      # Optional, if Pi-hole should get some more processing time
+      - SYS_NICE
+
+  unbound:
+    container_name: unbound
+    hostname: unbound-dns
+    image: mvance/unbound:latest
+    restart: unless-stopped
+    networks:
+      pi-net:
+        ipv4_address: 10.91.0.92
+    volumes:
+      - ${PIHOLE_CONFIG_DIR}/unbound:/opt/unbound/etc/unbound
+    ports:
+      - "5053:53/tcp"
+      - "5053:53/udp"

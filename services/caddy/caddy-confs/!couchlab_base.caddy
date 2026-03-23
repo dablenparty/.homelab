@@ -11,6 +11,7 @@
 	import /etc/caddy/caddy-confs/n8n.caddy {$BBG_IP} 5678
 	import /etc/caddy/caddy-confs/omni_tools.caddy omni-tools 80
 	import /etc/caddy/caddy-confs/open-speed-test.caddy openspeedtest 3000
+	import /etc/caddy/caddy-confs/pihole.caddy pihole 443
 	import /etc/caddy/caddy-confs/prometheus.caddy prometheus 9090
 	import /etc/caddy/caddy-confs/grafana.caddy grafana 3000
 	import /etc/caddy/caddy-confs/searxng.caddy searxng 8080

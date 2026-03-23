@@ -1,0 +1,18 @@
+@pihole host pihole.{$BASE_DOMAIN}
+
+@pihole_root {
+    host pihole.{$BASE_DOMAIN}
+    path /
+}
+redir @pihole_root /admin/
+
+handle @pihole {
+  import default-headers
+  import strict-csp
+
+  reverse_proxy https://{args[0]}:{args[1]} {
+    transport http {
+      tls_insecure_skip_verify
+    }
+  }
+}
