@@ -87,6 +87,24 @@ locations:
     # once a day at 5:00 AM
     cron: '0 5 * * *'
     forget: prune
+  pihole:
+    hooks:
+      prevalidate:
+        - command -v dch.sh >/dev/null
+      before:
+        - dch.sh stop "$AUTORESTIC_LOCATION"
+      after:
+        - dch.sh start "$AUTORESTIC_LOCATION"
+    from: /mnt/HomelabStorage/pihole
+    to: homelab-storage
+    # once a day at 3 AM
+    cron: '0 3 * * *'
+    # auto-prune
+    forget: prune
+    options:
+      backup:
+        tag:
+          - essential
   syncthing-config:
     hooks:
       before:
