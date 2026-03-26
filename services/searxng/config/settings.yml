@@ -11,6 +11,9 @@ engines:
     disabled: false
   - name: library of congress
     disabled: false
+plugins:
+  searx.plugins.infinite_scroll.SXNGPlugin:
+    active: true
 search:
   safe_search: 0
   autocomplete: duckduckgo
@@ -22,7 +25,6 @@ server:
   image_proxy: true
   http_protocol_version: "1.1"
 ui:
-  infinite_scroll: true
   hotkeys: vim
 valkey:
   url: valkey://searxng-valkey:6379/0
