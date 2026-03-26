@@ -1,7 +1,7 @@
 @13ft host 13ft.{$BASE_DOMAIN}
 handle @13ft {
   import default-headers
-  import strict-csp
+  import unsafe-csp
 
   reverse_proxy http://{args[0]}:{args[1]}
 }
