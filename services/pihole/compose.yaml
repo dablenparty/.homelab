@@ -74,3 +74,23 @@ services:
       - SYS_TIME
       # Optional, if Pi-hole should get some more processing time
       - SYS_NICE
+
+  pihole6-exporter:
+    image: amonacoos/pihole6_exporter:latest
+    container_name: pihole6-exporter
+    depends_on:
+      pihole:
+        condition: service_healthy
+    environment:
+      PIHOLE_HOST: 10.1.1.10
+      PIHOLE_API_KEY: ${PIHOLE_APP_PWD:?PIHOLE_APP_PWD is not set}
+      PIHOLE_SCHEME: http
+      PIHOLE_PORT: 80
+    restart: unless-stopped
+    networks:
+      - caddy-proxy
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
+    # ports:
+    #   - "9666:9666"
