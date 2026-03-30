@@ -1,7 +1,7 @@
 @pihole host pihole.{$BASE_DOMAIN}
 handle @pihole {
   import default-headers
-  import strict-csp
+  import unsafe-csp
 
   redir / /admin
 
