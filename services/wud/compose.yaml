@@ -65,6 +65,8 @@ services:
     networks:
       - caddy-proxy
       - wud-net
+    ports:
+      - "2300:3000"
     secrets:
       - lscr-private-token
       - lscr-private-username
