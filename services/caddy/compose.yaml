@@ -91,6 +91,7 @@ services:
 
   traefik-whoami:
     image: traefik/whoami
+    hostname: traefik-whoami
     depends_on:
       caddy:
         condition: service_healthy
