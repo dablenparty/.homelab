@@ -1,7 +1,6 @@
 @n8n host n8n.{$BASE_DOMAIN}
 handle @n8n {
   import default-headers
-  import strict-csp
 
   reverse_proxy http://{args[0]}:{args[1]} {
     flush_interval -1
