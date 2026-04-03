@@ -77,7 +77,7 @@ services:
       - 443:443
       - 443:443/udp
       # admin port
-      - "127.0.0.1:2019:2019"
+      - "2019:2019"
     volumes:
       - caddy-config:/config
       - caddy-data:/data
