@@ -41,7 +41,7 @@ services:
 
   searxng:
     container_name: searxng
-    image: ghcr.io/searxng/searxng:2026.3.26-e73442400
+    image: ghcr.io/searxng/searxng:2026.4.3-53141be38
     restart: unless-stopped
     # BUG: searxng cannot manage its certs properly without root
     # user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
