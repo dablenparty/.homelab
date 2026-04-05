@@ -11,6 +11,9 @@ Environment=BACKREST_RESTIC_COMMAND=/usr/bin/restic
 Environment=BACKREST_PORT=0.0.0.0:9898
 EnvironmentFile=/usr/local/lib/systemd/system/backrest.env
 ExecStart=/usr/bin/backrest
+# Allows backing up any file regardless of permission: https://restic.readthedocs.io/en/latest/080_examples.html#using-ambient-capabilities-with-systemd
+AmbientCapabilities=CAP_DAC_READ_SEARCH
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
 
 [Install]
 WantedBy=multi-user.target
