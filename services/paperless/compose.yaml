@@ -1,0 +1,227 @@
+networks:
+  caddy-proxy:
+    external: true
+  ollama-net:
+    external: true
+  pngx-net:
+    driver: bridge
+
+# TODO:
+# - pin versions
+# - make example.env
+services:
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless-ngx
+    hostname: paperless-ngx
+    restart: unless-stopped
+    environment:
+      PAPERLESS_ADMIN_MAIL: ${PAPERLESS_ADMIN_MAIL:?PAPERLESS_ADMIN_MAIL is not set}
+      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD:?PAPERLESS_ADMIN_PASSWORD is not set}
+      PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER:-admin}
+      PAPERLESS_REDIS: redis://pngx-valkey:6379
+      PAPERLESS_DBHOST: pngx-postgres
+      PAPERLESS_DBNAME: ${POSTGRES_DB:?POSTGRES_DB is not set}
+      PAPERLESS_DBUSER: ${POSTGRES_USER:?POSTGRES_USER is not set}
+      PAPERLESS_DBPASS: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+      PAPERLESS_URL: "https://pngx.${BASE_DOMAIN:?BASE_DOMAIN is not set}"
+      TZ: ${TZ:?TZ is not set}
+      USERMAP_UID: ${PAPERLESS_UID:-1000}
+      USERMAP_GID: ${PAPERLESS_GID:-1000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      gotenberg:
+        condition: service_healthy
+      tika:
+        condition: service_started
+    networks:
+      - caddy-proxy
+      - pngx-net
+    # ports:
+    #   - "8000:8000"
+    volumes:
+      - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/data:/usr/src/paperless/data
+      - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/media:/usr/src/paperless/media
+      - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/export:/usr/src/paperless/export
+      - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/consume:/usr/src/paperless/consume
+
+  postgres:
+    image: postgres:18.3-alpine
+    restart: unless-stopped
+    container_name: pngx-postgres
+    hostname: pngx-postgres
+    user: ${POSTGRES_UID:-1000}:${POSTGRES_GID:-1000}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 1m
+      timeout: 10s
+      retries: 10
+      start_period: 1m
+      start_interval: 1s
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-paperless}
+      POSTGRES_USER: ${POSTGRES_USER:-paperless}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
+      TZ: ${TZ:?TZ is not set}
+    networks:
+      - pngx-net
+    volumes:
+      - ${PAPERLESS_DATA_DIR}/postgres:/var/lib/postgresql
+      # for UID:GID mapping
+      - /etc/passwd:/etc/passwd:ro
+    labels:
+      wud.tag.include: '^(\d+(\.\d+)?)(-alpine)?$$'
+      wud.tag.transform: '^(\d+(\.\d+)?)(-.*)?$$ => $$1'
+      wud.link.template: 'https://www.postgresql.org/docs/release/$${major}.$${minor}/'
+
+  valkey:
+    image: ghcr.io/valkey-io/valkey:9.0.3-alpine
+    container_name: pngx-valkey
+    hostname: pngx-valkey
+    command: valkey-server --save 30 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "valkey-cli ping | grep PONG" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - pngx-net
+    environment:
+      TZ: ${TZ:?TZ is not set}
+    volumes:
+      - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/valkey:/data
+    labels:
+      wud.tag.include: '-alpine$$'
+      wud.tag.exclude: '^unstable.*'
+      wud.watch.digest: true
+      wud.link.template: 'https://github.com/valkey-io/valkey/releases'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1m'
+        max-file: '1'
+
+  # gotenberg service that paperless uses for document conversion
+  gotenberg:
+    image: docker.io/gotenberg/gotenberg:8.25
+    container_name: gotenberg
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    healthcheck:
+      test: 'curl -fsSL --request GET http://localhost:3000/health'
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      start_interval: 1s
+    environment:
+      TZ: ${TZ:?TZ is not set}
+    networks:
+      - pngx-net
+
+  # tika service that paperless uses for document text extraction
+  tika:
+    image: docker.io/apache/tika:latest
+    container_name: tika
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:?TZ is not set}
+    networks:
+      - pngx-net
+
+  # WARN: this is unmaintained. the author is working on a rewrite and Paperless is integrating
+  # AI themselves at some point, so we'll see what happens first.
+  paperless-ai:
+    image: ghcr.io/ivanzud/paperless-ai:main-2805637
+    container_name: paperless-ai
+    restart: unless-stopped
+    stop_grace_period: 30s
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges=true
+    depends_on:
+      paperless:
+        condition: service_healthy
+    environment:
+      PUID: ${PAPERLESS_UID:-1000}
+      PGID: ${PAPERLESS_GID:-1000}
+      ACTIVATE_TAGGING: yes
+      ACTIVATE_CORRESPONDENTS: yes
+      ACTIVATE_DOCUMENT_TYPE: yes
+      ACTIVATE_TITLE: yes
+      ADD_AI_PROCESSED_TAG: yes
+      AI_PROCESSED_TAG_NAME: pai-complete
+      AI_PROVIDER: ollama
+      OLLAMA_API_URL: http://ollama:11434
+      OLLAMA_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN:?PAPERLESS_API_TOKEN is not set}
+      PAPERLESS_API_URL: http://paperless-ngx:8000/api
+      PAPERLESS_PUBLIC_URL: https://pngx.${BASE_DOMAIN}
+      PAPERLESS_URL: http://paperless-ngx:8000
+      PAPERLESS_USERNAME: ${PAPERLESS_USERNAME:-admin}
+      PROCESS_PREDEFINED_DOCUMENTS: yes
+      TAGS: pai-auto
+      RAG_SERVICE_ENABLED: true
+      RAG_SERVICE_URL: http://localhost:8000
+      SCAN_INTERVAL: '*/30 * * * *'
+      ALLOW_REMOTE_SETUP: yes
+      COOKIE_SECURE_MODE: auto
+      TRUST_PROXY: yes
+    networks:
+      - caddy-proxy
+      - ollama-net
+      - pngx-net
+    volumes:
+      - ${PAPERLESS_DATA_DIR}/paperless-ai/data:/app/data
+
+  paperless-gpt:
+    image: ghcr.io/icereed/paperless-gpt:latest
+    container_name: paperless-gpt
+    restart: unless-stopped
+    depends_on:
+      paperless:
+        condition: service_healthy
+    environment:
+      PAPERLESS_BASE_URL: "http://paperless:8000"
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN:?PAPERLESS_API_TOKEN is not set}
+      PAPERLESS_PUBLIC_URL: "https://pngx.${BASE_DOMAIN:?BASE_DOMAIN is not set}"
+
+      LLM_PROVIDER: "ollama"
+      LLM_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
+      OLLAMA_HOST: "http://ollama:11434"
+      OLLAMA_CONTEXT_LENGTH: "8192" # Sets Ollama NumCtx (context window)
+      TOKEN_LIMIT: 1000 # Recommended for smaller models
+
+      LLM_LANGUAGE: "English" # Optional, default: English
+
+      OCR_PROVIDER: "llm" # Default OCR provider
+      VISION_LLM_PROVIDER: "ollama" # openai, ollama, mistral, or anthropic
+      VISION_LLM_MODEL: ${VISION_OLLAMA_MODEL:?VISION_OLLAMA_MODEL is not set}
+
+      AUTO_OCR_TAG: "pgpt-ocr-auto"
+      AUTO_TAG: "pgpt-auto"
+      MANUAL_TAG: "pgpt-manual"
+      PDF_OCR_TAGGING: "true"
+      PDF_OCR_COMPLETE_TAG: "pgpt-ocr-complete"
+      PDF_UPLOAD: "false"
+
+      LOG_LEVEL: "DEBUG"
+    networks:
+      - caddy-proxy
+      - ollama-net
+      - pngx-net
+    volumes:
+      - ${PAPERLESS_DATA_DIR}/paperless-gpt/prompts:/app/prompts

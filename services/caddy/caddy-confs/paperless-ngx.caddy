@@ -1,0 +1,15 @@
+@paperless-ngx host pngx.{$BASE_DOMAIN}
+handle @paperless-ngx {
+  import default-headers
+
+  header {
+    X-Frame-Options "SAMEORIGIN"
+    X-Content-Type-Options "nosniff"
+    X-XSS-Protection "0"
+    Permissions-Policy "camera=(), microphone=()"
+
+    Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src blob: data: 'self'; upgrade-insecure-requests"
+  }
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

@@ -24,6 +24,10 @@ networks:
     external: true
   n8n-net:
     driver: bridge
+  # for other containers that want to use ollama
+  ollama-net:
+    driver: bridge
+    name: ollama-net
 
 secrets:
   n8n-postgres-password:
@@ -46,9 +50,12 @@ services:
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
     environment:
-      OLLAMA_KEEP_ALIVE: 12h
+      # NOTE: disable cgroups on docker daemon for this to work
+      OLLAMA_KEEP_ALIVE: 5m
+      # OLLAMA_KEEP_ALIVE: -1m
     networks:
       - n8n-net
+      - ollama-net
     ports:
       - "127.0.0.1:11434:11434"
 
@@ -99,7 +106,7 @@ services:
 
   n8n:
     # NOTE: this image already drops root perms
-    image: n8nio/n8n:2.8.3
+    image: n8nio/n8n:2.15.1
     container_name: n8n
     restart: unless-stopped
     depends_on:
