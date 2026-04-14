@@ -1,80 +1,16 @@
-x-ollama: &base-ollama
-  image: ollama/ollama:0.17.6
-  user: ${OLLAMA_UID:-1000}:${OLLAMA_GID:-1000}
-  devices:
-    - /dev/nvidia-caps:/dev/nvidia-caps
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-modeset:/dev/nvidia-modeset
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-  runtime: nvidia
-  deploy:
-    resources:
-      reservations:
-        devices:
-          - driver: nvidia
-            count: all
-            capabilities: [gpu]
-  volumes:
-    - ${OLLAMA_DATA_DIR:?OLLAMA_DATA_DIR is not set}:/.ollama
-
 networks:
   caddy-proxy:
     external: true
   n8n-net:
     driver: bridge
-  # for other containers that want to use ollama
   ollama-net:
-    driver: bridge
-    name: ollama-net
+    external: true
 
 secrets:
   n8n-postgres-password:
     file: ./secrets/n8n-postgres-password
 
 services:
-  ollama:
-    <<: *base-ollama
-    container_name: ollama
-    hostname: ollama
-    restart: unless-stopped
-    healthcheck:
-      test: ollama --version && ollama ps || exit 1
-      interval: 1m
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-      start_interval: 1s
-    labels:
-      wud.tag.include: '^\d+\.\d+\.\d+$$'
-      wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
-    environment:
-      # NOTE: disable cgroups on docker daemon for this to work
-      OLLAMA_KEEP_ALIVE: 5m
-      # OLLAMA_KEEP_ALIVE: -1m
-    networks:
-      - n8n-net
-      - ollama-net
-    ports:
-      - "127.0.0.1:11434:11434"
-
-  init-ollama:
-    <<: *base-ollama
-    network_mode: service:ollama
-    depends_on:
-      ollama:
-        condition: service_healthy
-        restart: true
-    labels:
-      wud.watch: false
-    environment:
-      OLLAMA_HOST: ollama:11434
-    entrypoint: /bin/sh
-    command:
-      - "-c"
-      - "sleep 3; ollama pull ${DEFAULT_MODEL:?DEFAULT_MODEL is not set}"
-
   postgres:
     image: postgres:18.3-alpine
     container_name: n8n-postgres
@@ -110,8 +46,6 @@ services:
     container_name: n8n
     restart: unless-stopped
     depends_on:
-      init-ollama:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     secrets:
