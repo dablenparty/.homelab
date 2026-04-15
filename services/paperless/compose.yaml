@@ -6,12 +6,10 @@ networks:
   pngx-net:
     driver: bridge
 
-# TODO:
-# - pin versions
-# - make example.env
+# TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.14
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -50,6 +48,9 @@ services:
       - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/media:/usr/src/paperless/media
       - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/export:/usr/src/paperless/export
       - ${PAPERLESS_DATA_DIR:?PAPERLESS_DATA_DIR is not set}/paperless/consume:/usr/src/paperless/consume
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/paperless-ngx/paperless-ngx/releases/tag/v$${major}.$${minor}.$${patch}'
 
   postgres:
     image: postgres:18.3-alpine
@@ -111,7 +112,7 @@ services:
 
   # gotenberg service that paperless uses for document conversion
   gotenberg:
-    image: docker.io/gotenberg/gotenberg:8.25
+    image: docker.io/gotenberg/gotenberg:8.30.1
     container_name: gotenberg
     restart: unless-stopped
     command:
@@ -129,21 +130,28 @@ services:
       TZ: ${TZ:?TZ is not set}
     networks:
       - pngx-net
+    labels:
+      wud.tag.include: '^\d+\.\d+(\.\d+)?$$'
+      wud.link.template: 'https://github.com/gotenberg/gotenberg/releases/tag/v$${major}.$${minor}.$${patch}'
 
   # tika service that paperless uses for document text extraction
   tika:
-    image: docker.io/apache/tika:latest
+    image: docker.io/apache/tika:3.3.0.0
     container_name: tika
     restart: unless-stopped
     environment:
       TZ: ${TZ:?TZ is not set}
     networks:
       - pngx-net
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+\.\d+$$'
+      wud.tag.transform: '^(\d+\.\d+\.\d+)\.\d+$$ => $$1'
+      wud.link.template: 'https://tika.apache.org/$${major}.$${minor}.$${patch}/index.html'
 
   # WARN: this is unmaintained. the author is working on a rewrite and Paperless is integrating
   # AI themselves at some point, so we'll see what happens first.
   paperless-ai:
-    image: ghcr.io/ivanzud/paperless-ai:main-2805637
+    image: ghcr.io/ivanzud/paperless-ai:latest
     container_name: paperless-ai
     restart: unless-stopped
     stop_grace_period: 30s
@@ -182,9 +190,12 @@ services:
       - pngx-net
     volumes:
       - ${PAPERLESS_DATA_DIR}/paperless-ai/data:/app/data
+    labels:
+      wud.tag.include: 'latest'
+      wud.watch.digest: true
 
   paperless-gpt:
-    image: ghcr.io/icereed/paperless-gpt:latest
+    image: ghcr.io/icereed/paperless-gpt:v0.25.1
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
@@ -221,3 +232,6 @@ services:
       - pngx-net
     volumes:
       - ${PAPERLESS_DATA_DIR}/paperless-gpt/prompts:/app/prompts
+    labels:
+      wud.tag.include: '^v\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/icereed/paperless-gpt/releases/tag/v$${major}.$${minor}.$${patch}'
