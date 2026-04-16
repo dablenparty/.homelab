@@ -86,6 +86,7 @@ services:
       TZ: ${TZ:?TZ is not set}
     networks:
       - caddy-proxy
+      - ollama-net
       - n8n-net
     volumes:
       - ${N8N_DATA_DIR:?N8N_DATA_DIR is not set}/n8n:/home/node/.n8n
