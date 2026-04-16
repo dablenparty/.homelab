@@ -11,6 +11,8 @@ services:
       YTDL_OPTIONS: '{"cookiefile":"/cookies/cookies.txt"}'
     networks:
       - caddy-proxy
+    ports:
+      - "8081:8081"
     labels:
       wud.tag.include: '^\d+\.\d+\.\d+$$'
       # this is just a JS string template so JS functions work as expected
