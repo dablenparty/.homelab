@@ -18,7 +18,7 @@ services:
   pihole:
     container_name: pihole
     hostname: pihole
-    image: ghcr.io/pi-hole/pihole:2026.02.0
+    image: ghcr.io/pi-hole/pihole:2026.04.0
     restart: unless-stopped
     healthcheck:
       test: nslookup pihole.${BASE_DOMAIN:?BASE_DOMAIN is not set} 127.0.0.1 || exit 1
