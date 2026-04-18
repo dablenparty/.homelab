@@ -3,6 +3,7 @@
 	import /etc/caddy/caddy-confs/cloudflare_dns_challenge.caddy
 
 	import /etc/caddy/caddy-confs/13ft.caddy 13ft 5000
+	import /etc/caddy/caddy-confs/authentik.caddy authentik-server 9443
 	import /etc/caddy/caddy-confs/backrest.caddy {$BBG_IP} 9898
 	import /etc/caddy/caddy-confs/forgejo.caddy forgejo-server 3000
 	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096

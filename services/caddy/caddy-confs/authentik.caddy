@@ -1,0 +1,23 @@
+@authentik host auth.{$BASE_DOMAIN}
+handle @authentik {
+  import default-headers
+
+  # from: https://docs.goauthentik.io/security/security-hardening/#content-security-policy-csp
+  header {
+    Content-Security-Policy "
+          default-src 'self' *.{BASE_DOMAIN};
+          img-src https: data: *.{BASE_DOMAIN};
+          object-src 'none';
+          style-src 'self' *.{BASE_DOMAIN} 'unsafe-inline' ;
+          script-src 'self' *.{BASE_DOMAIN} 'unsafe-inline';
+    "
+  }
+
+  reverse_proxy https://{args[0]}:{args[1]} {
+      transport http {
+          tls_insecure_skip_verify
+        }
+
+      header_up Host {upstream_hostport}
+    }
+}

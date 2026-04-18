@@ -1,0 +1,150 @@
+x-authentik: &base-authentik
+    image: ghcr.io/goauthentik/server:2026.2.2
+    restart: unless-stopped
+    shm_size: 512mb
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
+      AUTHENTIK_POSTGRESQL__USER: ${POSTGRES_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
+      AUTHENTIK_REDIS__HOST: authentik-valkey
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY is not set}
+      DOCKER_HOST: http://authentik-docksock:2375
+
+networks:
+  auth-net:
+    driver: bridge
+    name: auth-net
+  caddy-proxy:
+    external: true
+
+services:
+  postgres:
+    image: postgres:18.3-alpine
+    restart: unless-stopped
+    container_name: authentik-postgres
+    hostname: authentik-postgres
+    user: ${POSTGRES_UID:-1000}:${POSTGRES_GID:-1000}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 1m
+      timeout: 10s
+      retries: 10
+      start_period: 1m
+      start_interval: 1s
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-authentik}
+      POSTGRES_USER: ${POSTGRES_USER:-authentik}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
+      TZ: ${TZ:?TZ is not set}
+    networks:
+      - auth-net
+    volumes:
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/postgres:/var/lib/postgresql
+      # for UID:GID mapping
+      - /etc/passwd:/etc/passwd:ro
+    labels:
+      wud.tag.include: '^(\d+(\.\d+)?)(-alpine)?$$'
+      wud.tag.transform: '^(\d+(\.\d+)?)(-.*)?$$ => $$1'
+      wud.link.template: 'https://www.postgresql.org/docs/release/$${major}.$${minor}/'
+
+  valkey:
+    image: ghcr.io/valkey-io/valkey:9.0.3-alpine
+    container_name: authentik-valkey
+    hostname: authentik-valkey
+    command: valkey-server --save 30 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "valkey-cli ping | grep PONG" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - auth-net
+    environment:
+      TZ: ${TZ:?TZ is not set}
+    volumes:
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/valkey:/data
+    labels:
+      wud.tag.include: '-alpine$$'
+      wud.tag.exclude: '^unstable.*'
+      wud.watch.digest: true
+      wud.link.template: 'https://github.com/valkey-io/valkey/releases'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '1m'
+        max-file: '1'
+
+  authentik-server:
+    <<: *base-authentik
+    command: server
+    container_name: authentik-server
+    networks:
+      - auth-net
+      - caddy-proxy
+    # ports:
+    #   - "9000:9000"
+    #   - "9443:9443"
+    volumes:
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/authentik/data:/data
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/authentik/custom-templates:/templates
+    labels:
+      wud.tag.include: '^\d+\.\d+(\.\d+)?$$'
+      wud.link.template: 'https://github.com/goauthentik/authentik/releases/tag/version%2F$${major}.$${minor}.$${patch}'
+
+  authentik-worker:
+    <<: *base-authentik
+    # `user: root` and the docker socket volume are optional.
+    # See more for the docker socket integration here:
+    # https://goauthentik.io/docs/outposts/integrations/docker
+    # Removing `user: root` also prevents the worker from fixing the permissions
+    # on the mounted folders, so when removing this make sure the folders have the correct UID/GID
+    # (1000:1000 by default)
+    command: worker
+    user: root
+    networks:
+      - auth-net
+    volumes:
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/authentik/data:/data
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/authentik/certs:/certs
+      - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/authentik/custom-templates:/templates
+    labels:
+      # uses the same image as above
+      wud.watch: false
+
+  socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: authentik-docksock
+    restart: unless-stopped
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:2375/_ping || exit 1
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+    environment:
+      CONTAINERS: 1
+      IMAGES: 1
+      INFO: 1
+      POST: 1
+      TZ: ${TZ:-Etc/UTC}
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - auth-net
+    read_only: true
+    tmpfs:
+      - /run
