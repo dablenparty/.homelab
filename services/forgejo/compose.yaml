@@ -80,6 +80,8 @@ services:
       USER_UID: ${GIT_UID:?GIT_UID is not set to git user ID}
       USER_GID: ${GIT_GID:?GIT_GID is not set to git group ID}
 
+      ENABLE_AUTO_REGISTRATION: true
+
       FORGEJO__security__INSTALL_LOCK: true
       # create new repos on push
       FORGEJO__repository__ENABLE_PUSH_CREATE_USER: true
