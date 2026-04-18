@@ -17,18 +17,42 @@ services:
       PAPERLESS_ADMIN_MAIL: ${PAPERLESS_ADMIN_MAIL:?PAPERLESS_ADMIN_MAIL is not set}
       PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD:?PAPERLESS_ADMIN_PASSWORD is not set}
       PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER:-admin}
-      PAPERLESS_REDIS: redis://pngx-valkey:6379
+      PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
       PAPERLESS_DBHOST: pngx-postgres
       PAPERLESS_DBNAME: ${POSTGRES_DB:?POSTGRES_DB is not set}
-      PAPERLESS_DBUSER: ${POSTGRES_USER:?POSTGRES_USER is not set}
       PAPERLESS_DBPASS: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
+      PAPERLESS_DBUSER: ${POSTGRES_USER:?POSTGRES_USER is not set}
+      PAPERLESS_REDIS: redis://pngx-valkey:6379
+      PAPERLESS_LOGOUT_REDIRECT_URL: "https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/${AUTHENTIK_SLUG:?AUTHENTIK_SLUG is not set}/end-session/"
+      PAPERLESS_SOCIAL_AUTO_SIGNUP: true
+      PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS: >
+          {
+            "openid_connect": {
+              "OAUTH_PKCE_ENABLED": true,
+              "APPS": [
+                {
+                  "provider_id": "authentik",
+                  "name": "authentik",
+                  "client_id": "${AUTHENTIK_CLIENT_ID:?AUTHENTIK_CLIENT_ID is not set}",
+                  "secret": "${AUTHENTIK_CLIENT_SECRET:?AUTHENTIK_CLIENT_SECRET is not set}",
+                  "settings": {
+                    "server_url": "https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/${AUTHENTIK_SLUG:?AUTHENTIK_SLUG is not set}/.well-known/openid-configuration",
+                    "fetch_userinfo": true
+                  }
+                }
+              ],
+              "SCOPE": ["openid", "profile", "email"]
+            }
+          }
+      PAPERLESS_REDIRECT_LOGIN_TO_SSO: true
       PAPERLESS_TIKA_ENABLED: 1
-      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_URL: "https://pngx.${BASE_DOMAIN:?BASE_DOMAIN is not set}"
       TZ: ${TZ:?TZ is not set}
-      USERMAP_UID: ${PAPERLESS_UID:-1000}
       USERMAP_GID: ${PAPERLESS_GID:-1000}
+      USERMAP_UID: ${PAPERLESS_UID:-1000}
     depends_on:
       postgres:
         condition: service_healthy
