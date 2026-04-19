@@ -74,7 +74,7 @@ services:
     volumes:
       - ${AUTHENTIK_DATA_DIR:?AUTHENTIK_DATA_DIR is not set}/valkey:/data
     labels:
-      wud.tag.include: '-alpine$$'
+      wud.tag.include: '^\d+\.\d+\.\d+-alpine$$'
       wud.tag.exclude: '^unstable.*'
       wud.watch.digest: true
       wud.link.template: 'https://github.com/valkey-io/valkey/releases'
