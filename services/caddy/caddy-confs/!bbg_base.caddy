@@ -11,6 +11,7 @@
 	import /etc/caddy/caddy-confs/n8n.caddy n8n 5678
 	import /etc/caddy/caddy-confs/omni_tools.caddy omni-tools 80
 	import /etc/caddy/caddy-confs/open-speed-test.caddy {$FANGBOX_IP} 3000
+	import /etc/caddy/caddy-confs/open-webui.caddy open-webui 8080
 	import /etc/caddy/caddy-confs/paperless-ngx.caddy paperless-ngx 8000
 	import /etc/caddy/caddy-confs/paperless-ai.caddy paperless-ai 3000
 	import /etc/caddy/caddy-confs/paperless-gpt.caddy paperless-gpt 8080

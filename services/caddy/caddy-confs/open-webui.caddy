@@ -1,0 +1,7 @@
+@open-webui host open-webui.{$BASE_DOMAIN}
+handle @open-webui {
+  import default-headers
+  import strict-csp
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

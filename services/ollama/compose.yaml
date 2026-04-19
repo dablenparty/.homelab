@@ -20,6 +20,8 @@ x-ollama: &base-ollama
     - ${OLLAMA_DATA_DIR:?OLLAMA_DATA_DIR is not set}:/.ollama
 
 networks:
+  caddy-proxy:
+    external: true
   # for other containers that want to use ollama
   ollama-net:
     driver: bridge
@@ -28,6 +30,7 @@ networks:
 services:
   ollama:
     <<: *base-ollama
+    tty: true
     container_name: ollama
     hostname: ollama
     restart: unless-stopped
@@ -38,9 +41,6 @@ services:
       retries: 5
       start_period: 30s
       start_interval: 1s
-    labels:
-      wud.tag.include: '^\d+\.\d+\.\d+$$'
-      wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
     environment:
       # NOTE: disable cgroups on docker daemon for this to work
       OLLAMA_KEEP_ALIVE: 5m
@@ -49,6 +49,9 @@ services:
       - ollama-net
     ports:
       - "127.0.0.1:11434:11434"
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/ollama/ollama/releases/tag/v$${major}.$${minor}.$${patch}'
 
   init-ollama:
     <<: *base-ollama
@@ -68,3 +71,40 @@ services:
         for model in "$${models[@]}"; do ollama pull "$$model"; done
     labels:
       wud.watch: false
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:v0.8.12-slim
+    container_name: open-webui
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    # ports:
+    #   - ${OPEN_WEBUI_PORT-3000}:8080
+    environment:
+      # Disables user/password login form. Required when ENABLE_OAUTH_SIGNUP: true.
+      ENABLE_LOGIN_FORM: false
+      # Allows auto-creation of new users using OAuth. Must be paired with ENABLE_LOGIN_FORM: false.
+      ENABLE_OAUTH_SIGNUP: true
+      ENABLE_RAG_WEB_SEARCH: true
+      OAUTH_CLIENT_ID: ${OID_CLIENT_ID:?OID_CLIENT_ID is not set}
+      OAUTH_CLIENT_SECRET: ${OID_CLIENT_SECRET:?OID_CLIENT_SECRET is not set}
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: true
+      OAUTH_PROVIDER_NAME: ${OID_PROVIDER:-authentik}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OPENID_PROVIDER_URL: https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/open-webui/.well-known/openid-configuration
+      OPENID_REDIRECT_URI: https://open-webui.${BASE_DOMAIN:?BASE_DOMAIN is not set}/oauth/oidc/callback
+      RAG_WEB_SEARCH_CONCURRENT_REQUESTS: 10
+      RAG_WEB_SEARCH_ENGINE: "searxng"
+      RAG_WEB_SEARCH_RESULT_COUNT: 3
+      SEARXNG_QUERY_URL: "http://searxng.${BASE_DOMAIN:?BASE_DOMAIN is not set}/search?q=<query>"
+      WEBUI_URL: https://open-webui.${BASE_DOMAIN:?BASE_DOMAIN is not set}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - caddy-proxy
+      - ollama-net
+    volumes:
+      - ${OPEN_WEBUI_DATA_DIR:?OPEN_WEBUI_DATA_DIR is not set}:/app/backend/data
+
+
