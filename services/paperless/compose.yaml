@@ -136,7 +136,7 @@ services:
 
   # gotenberg service that paperless uses for document conversion
   gotenberg:
-    image: docker.io/gotenberg/gotenberg:8.30.1
+    image: docker.io/gotenberg/gotenberg:8.31.0
     container_name: gotenberg
     restart: unless-stopped
     command:
