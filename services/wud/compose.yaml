@@ -46,6 +46,11 @@ services:
       socket-proxy:
         condition: service_healthy
     environment:
+      WUD_AUTH_OIDC_AUTHENTIK_CLIENTID: ${AUTHENTIK_CLIENT_ID:?AUTHENTIK_CLIENT_ID is not set}
+      WUD_AUTH_OIDC_AUTHENTIK_CLIENTSECRET: ${AUTHENTIK_CLIENT_SECRET:?AUTHENTIK_CLIENT_SECRET is not set}
+      WUD_AUTH_OIDC_AUTHENTIK_DISCOVERY: https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/wud/.well-known/openid-configuration
+      WUD_AUTH_OIDC_AUTHENTIK_REDIRECT: true
+
       WUD_REGISTRY_LSCR_PUBLIC_USERNAME__FILE: /run/secrets/lscr-private-username
       WUD_REGISTRY_LSCR_PUBLIC_TOKEN__FILE: /run/secrets/lscr-private-token
 
