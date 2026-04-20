@@ -201,7 +201,7 @@ services:
       PAPERLESS_URL: http://paperless-ngx:8000
       PAPERLESS_USERNAME: ${PAPERLESS_AI_USERNAME:-admin}
       PROCESS_PREDEFINED_DOCUMENTS: yes
-      TAGS: pai-auto
+      TAGS: review
       RAG_SERVICE_ENABLED: true
       RAG_SERVICE_URL: http://localhost:8000
       SCAN_INTERVAL: '*/30 * * * *'
