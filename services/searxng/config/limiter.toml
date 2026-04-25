@@ -42,4 +42,5 @@ link_token = true
 [botdetection.ip_lists]
 pass_ip = [
   "192.168.50.0/24",
+  'fd7b:ec67:c15d::/64',
 ]

@@ -17,6 +17,9 @@ plugins:
 search:
   safe_search: 0
   autocomplete: duckduckgo
+  formats:
+    - html
+    - json
 server:
   # base_url is defined in the SEARXNG_BASE_URL environment variable, see .env and docker-compose.yml
   secret_key: "ultrasecretkey"  # change this!
