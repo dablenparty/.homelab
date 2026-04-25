@@ -1,5 +1,5 @@
 x-ollama: &base-ollama
-  image: ollama/ollama:0.20.6
+  image: ollama/ollama:0.21.2
   user: ${OLLAMA_UID:-1000}:${OLLAMA_GID:-1000}
   devices:
     - /dev/nvidia-caps:/dev/nvidia-caps
@@ -73,7 +73,7 @@ services:
       wud.watch: false
 
   open-webui:
-    image: ghcr.io/open-webui/open-webui:v0.8.12-slim
+    image: ghcr.io/open-webui/open-webui:v0.9.2-slim
     container_name: open-webui
     restart: unless-stopped
     depends_on:
