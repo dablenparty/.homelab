@@ -46,6 +46,13 @@ services:
     restart: unless-stopped
     # BUG: searxng cannot manage its certs properly without root
     # user: ${SEARXNG_UID:-1000}:${SEARXNG_GID:-1000}
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     healthcheck:
       test: wget --quiet --tries=1 --spider http://localhost:8080/healthz || exit 1
       interval: 1m
@@ -56,6 +63,10 @@ services:
     depends_on:
       valkey:
         condition: service_healthy
+    environment:
+      SEARXNG_BASE_URL: https://searxng.${BASE_DOMAIN:?BASE_DOMAIN is not set}/
+      SEARXNG_HOSTNAME: searxng.${BASE_DOMAIN:?BASE_DOMAIN is not set}
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}
     networks:
       - caddy-proxy
       - searxng
@@ -65,9 +76,6 @@ services:
     labels:
       wud.tag.include: '^(\d+\.\d+\.\d+)-.*$$'
       wud.tag.transform: '^(\d+\.\d+\.\d+)-.*$$ => $$1'
-    environment:
-      - SEARXNG_BASE_URL=https://searxng.${BASE_DOMAIN:?BASE_DOMAIN is not set}/
-      - SEARXNG_SECRET=${SEARXNG_SECRET:?SEARXNG_SECRET is not set, create one with 'openssl rand -hex 32'}
     logging:
       driver: 'json-file'
       options:
