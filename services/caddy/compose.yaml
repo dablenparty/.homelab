@@ -15,6 +15,9 @@ networks:
     ipam:
       config:
         - subnet: 10.2.0.0/16
+  # to keep ollama isolated...
+  ollama-net:
+    external: true
 
 secrets:
   cf-tunnel-token:
@@ -86,6 +89,7 @@ services:
       - ./certs:/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.${BASE_DOMAIN}
     networks:
       - caddy-proxy
+      - ollama-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
