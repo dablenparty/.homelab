@@ -25,6 +25,7 @@ secrets:
 services:
   lazymc:
     image: ghcr.io/joesturge/lazymc-docker-proxy:v2.7.4
+    container_name: tekxit-lazymc
     networks:
       minecraft-network:
         ipv4_address: 10.64.0.2
