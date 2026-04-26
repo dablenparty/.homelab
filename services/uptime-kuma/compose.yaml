@@ -1,0 +1,51 @@
+networks:
+  caddy-proxy:
+    external: true
+  uptime-net:
+    driver: bridge
+
+services:
+  uptime-kuma:
+    image: ghcr.io/louislam/uptime-kuma:2.2.1
+    container_name: uptime-kuma
+    depends_on:
+      socket-proxy:
+        condition: service_started
+    volumes:
+      - ${UPTIME_KUMA_DATA_DIR:?UPTIME_KUMA_DATA_DIR is not set}/data:/app/data
+    networks:
+      - caddy-proxy
+      - uptime-net
+    # ports:
+    #   - 3001:3001
+    restart: unless-stopped
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/louislam/uptime-kuma/releases/tag/$${major}.$${minor}.$${patch}'
+
+  socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: uptime-kuma-docksock
+    pull_policy: always
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:2375/_ping || exit 1
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+    environment:
+      CONTAINERS: 1
+      INFO: 1
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - uptime-net
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+    labels:
+      wud.tag.include: latest
+      wud.watch.digest: true

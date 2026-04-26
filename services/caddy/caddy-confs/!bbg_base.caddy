@@ -21,6 +21,7 @@
 	import /etc/caddy/caddy-confs/searxng.caddy searxng 8080
 	import /etc/caddy/caddy-confs/syncthing.caddy fangbox {$FANGBOX_IP} 8384
 	import /etc/caddy/caddy-confs/syncthing.caddy bbg {$BBG_IP} 8384
+	import /etc/caddy/caddy-confs/uptime-kuma.caddy
 	import /etc/caddy/caddy-confs/whoami.caddy traefik-whoami 80
 	import /etc/caddy/caddy-confs/wud.caddy {$FANGBOX_IP} 2300
 }
