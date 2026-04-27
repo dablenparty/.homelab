@@ -2,5 +2,14 @@
 handle @upkuma {
   import default-headers
 
-  reverse_proxy http://uptime-kuma:3001
+  header {
+    Content-Security-Policy "
+          default-src 'self' *.{$BASE_DOMAIN};
+          img-src 'self' *.{$BASE_DOMAIN} blob: data:;
+          script-src 'self' *.{$BASE_DOMAIN} 'unsafe-eval';
+          style-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline';
+      "
+   }
+
+  import outpost-auth http://{$FANGBOX_IP}:3001
 }

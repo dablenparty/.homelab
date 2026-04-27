@@ -13,7 +13,20 @@ handle @authentik {
     "
   }
 
-  reverse_proxy https://{args[0]}:{args[1]} {
+  reverse_proxy https://authentik-server:9443 {
+      transport http {
+          tls_insecure_skip_verify
+        }
+
+      header_up Host {upstream_hostport}
+    }
+}
+
+@outpost host outpost.{$BASE_DOMAIN}
+handle @outpost {
+  import default-headers
+
+  reverse_proxy https://authentik-server:9443 {
       transport http {
           tls_insecure_skip_verify
         }

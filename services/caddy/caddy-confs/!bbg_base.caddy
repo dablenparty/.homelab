@@ -1,9 +1,30 @@
+(outpost-auth) {
+  # directive execution order is only as stated if enclosed with route.
+  route {
+      # always forward outpost path to actual outpost
+      reverse_proxy /outpost.goauthentik.io/* https://outpost.{$BASE_DOMAIN} {
+        header_up Host {http.reverse_proxy.upstream.host}
+      }
+
+      # forward authentication to outpost
+      forward_auth https://outpost.{$BASE_DOMAIN} {
+          uri /outpost.goauthentik.io/auth/caddy
+
+          # capitalization of the headers is important, otherwise they will be empty
+          copy_headers X-Authentik-Username X-Authentik-Groups X-Authentik-Entitlements X-Authentik-Email X-Authentik-Name X-Authentik-Uid X-Authentik-Jwt X-Authentik-Meta-Jwks X-Authentik-Meta-Outpost X-Authentik-Meta-Provider X-Authentik-Meta-App X-Authentik-Meta-Version
+      }
+
+      # actual site configuration below, for example
+      reverse_proxy {args[0]}
+  }
+}
+
 # the ! at the start of the filename indicates a base config
 *.{$BASE_DOMAIN} {
 	import /etc/caddy/caddy-confs/cloudflare_dns_challenge.caddy
 
 	import /etc/caddy/caddy-confs/13ft.caddy 13ft 5000
-	import /etc/caddy/caddy-confs/authentik.caddy authentik-server 9443
+	import /etc/caddy/caddy-confs/authentik.caddy
 	import /etc/caddy/caddy-confs/backrest.caddy {$BBG_IP} 9898
 	import /etc/caddy/caddy-confs/forgejo.caddy forgejo-server 3000
 	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096
