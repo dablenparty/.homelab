@@ -1,0 +1,7 @@
+@ollama host ollama.{$BASE_DOMAIN}
+handle @ollama {
+  import default-headers
+  import strict-csp
+
+  reverse_proxy http://{args[0]}:{args[1]}
+}

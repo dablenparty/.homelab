@@ -30,6 +30,7 @@
 	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096
 	import /etc/caddy/caddy-confs/metube.caddy {$FANGBOX_IP} 8081
 	import /etc/caddy/caddy-confs/n8n.caddy n8n 5678
+	import /etc/caddy/caddy-confs/ollama.caddy ollama 11434
 	import /etc/caddy/caddy-confs/omni_tools.caddy omni-tools 80
 	import /etc/caddy/caddy-confs/open-speed-test.caddy {$FANGBOX_IP} 3000
 	import /etc/caddy/caddy-confs/open-webui.caddy open-webui 8080
