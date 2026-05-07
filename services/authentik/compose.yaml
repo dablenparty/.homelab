@@ -56,7 +56,7 @@ services:
       wud.link.template: 'https://www.postgresql.org/docs/release/$${major}.$${minor}/'
 
   valkey:
-    image: ghcr.io/valkey-io/valkey:9.0.3-alpine
+    image: ghcr.io/valkey-io/valkey:9.0.4-alpine
     container_name: authentik-valkey
     hostname: authentik-valkey
     command: valkey-server --save 30 1 --loglevel warning
@@ -124,6 +124,7 @@ services:
   socket-proxy:
     image: lscr.io/linuxserver/socket-proxy:latest
     container_name: authentik-docksock
+    pull_policy: always
     restart: unless-stopped
     healthcheck:
       test: wget --quiet --tries=1 --spider http://localhost:2375/_ping || exit 1
