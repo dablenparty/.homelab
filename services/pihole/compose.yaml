@@ -92,5 +92,5 @@ services:
     labels:
       wud.tag.include: latest
       wud.watch.digest: true
-    ports:
-      - "9666:9666"
+    # ports:
+    #   - "9666:9666"
