@@ -42,7 +42,7 @@ services:
 
   n8n:
     # NOTE: this image already drops root perms
-    image: n8nio/n8n:2.16.1
+    image: n8nio/n8n:stable
     container_name: n8n
     restart: unless-stopped
     depends_on:
@@ -60,7 +60,7 @@ services:
     ports:
       - "5678:5678"
     labels:
-      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.tag.include: '^(stable|\d+\.\d+\.\d+)$$'
       wud.link.template: 'https://github.com/n8n-io/n8n/releases/tag/n8n%40$${major}.$${minor}.$${patch}'
     environment:
       DB_TYPE: postgresdb
