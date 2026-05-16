@@ -1,6 +1,8 @@
 networks:
   advisor-net:
     driver: bridge
+  caddy-proxy:
+    external: true
 
 services:
   socket-proxy:
@@ -35,7 +37,7 @@ services:
       - /run
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:0.56.2
+    image: ghcr.io/google/cadvisor:0.57.0
     container_name: cadvisor
     privileged: true
     restart: unless-stopped
@@ -54,8 +56,9 @@ services:
       wud.link.template: 'https://github.com/google/cadvisor/releases/tag/v$${major}.$${minor}.$${patch}'
     networks:
       - advisor-net
+      - caddy-proxy
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
