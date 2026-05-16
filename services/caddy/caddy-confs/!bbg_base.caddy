@@ -1,3 +1,23 @@
+(metrics-http) {
+  reverse_proxy http://{args[0]} {
+    rewrite /metrics
+
+    header_up Host {upstream_hostport}
+  }
+}
+
+(metrics-https) {
+  reverse_proxy https://{args[0]} {
+    rewrite /metrics
+
+    transport http {
+      tls_insecure_skip_verify
+    }
+
+    header_up Host {upstream_hostport}
+  }
+}
+
 (outpost-auth) {
   # directive execution order is only as stated if enclosed with route.
   route {
@@ -28,6 +48,7 @@
 	import /etc/caddy/caddy-confs/backrest.caddy {$BBG_IP} 9898
 	import /etc/caddy/caddy-confs/forgejo.caddy forgejo-server 3000
 	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096
+	import /etc/caddy/caddy-confs/metrics.caddy
 	import /etc/caddy/caddy-confs/metube.caddy {$FANGBOX_IP} 8081
 	import /etc/caddy/caddy-confs/n8n.caddy n8n 5678
 	import /etc/caddy/caddy-confs/ollama.caddy ollama 11434
@@ -37,7 +58,7 @@
 	import /etc/caddy/caddy-confs/paperless-ngx.caddy paperless-ngx 8000
 	import /etc/caddy/caddy-confs/paperless-ai.caddy paperless-ai 3000
 	import /etc/caddy/caddy-confs/paperless-gpt.caddy paperless-gpt 8080
-	import /etc/caddy/caddy-confs/pihole.caddy pihole 443
+	import /etc/caddy/caddy-confs/pihole.caddy
 	import /etc/caddy/caddy-confs/prometheus.caddy {$FANGBOX_IP} 9090
 	import /etc/caddy/caddy-confs/grafana.caddy {$FANGBOX_IP} 9091
 	import /etc/caddy/caddy-confs/searxng.caddy searxng 8080
