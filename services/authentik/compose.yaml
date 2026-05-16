@@ -1,5 +1,5 @@
 x-authentik: &base-authentik
-    image: ghcr.io/goauthentik/server:2026.2.2
+    image: ghcr.io/goauthentik/server:2026.2.3
     restart: unless-stopped
     shm_size: 512mb
     depends_on:
@@ -27,7 +27,7 @@ networks:
 
 services:
   postgres:
-    image: postgres:18.3-alpine
+    image: postgres:18.4-alpine
     restart: unless-stopped
     container_name: authentik-postgres
     hostname: authentik-postgres
