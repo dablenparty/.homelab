@@ -8,8 +8,8 @@ handle @authentik {
           default-src 'self' *.{BASE_DOMAIN};
           img-src https: data: *.{BASE_DOMAIN};
           object-src 'none';
-          style-src 'self' *.{BASE_DOMAIN} 'unsafe-inline' ;
-          script-src 'self' *.{BASE_DOMAIN} 'unsafe-inline';
+          style-src 'self' *.{BASE_DOMAIN} 'unsafe-inline';
+          script-src 'self' *.{BASE_DOMAIN} 'unsafe-inline' 'unsafe-eval';
     "
   }
 
