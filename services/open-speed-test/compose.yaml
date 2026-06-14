@@ -5,7 +5,7 @@ networks:
 services:
   openspeedtest:
     image: openspeedtest/latest:v2.0.6
-    container_name: openspeedtest
+    container_name: open-speed-test
     restart: unless-stopped
     ports:
       - "3000:3000"
