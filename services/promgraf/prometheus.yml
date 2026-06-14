@@ -5,18 +5,33 @@ global:
     instance: 'couchlab'
 
 scrape_configs:
-  - job_name: caddy
+  - job_name: authentik
+    scheme: https
+    metrics_path: '/v1/authentik'
     static_configs:
-      - targets: ['bbg.internal:2019']
+      - targets: ['bbg-metrics.couchlab.me']
+
+  # TODO: setup metrics.couchlab.me
+  # /bbg/*
+  # /fangbox/*
+  # etc..
+  # lock the entire thing to local IP only, maybe even just Fangbox IP only
+  - job_name: caddy
+    scheme: https
+    metrics_path: '/v1/caddy'
+    static_configs:
+      - targets: ['bbg-metrics.couchlab.me']
 
   - job_name: cAdvisor
+    scheme: https
+    metrics_path: /v1/cAdvisor
     metric_relabel_configs:
       - source_labels: ['container_label_com_docker_swarm_service_name']
         target_label: 'service'
       - source_labels: ['name']
         target_label: 'container'
     static_configs:
-      - targets: ['cadvisor:8080', 'bbg.internal:8080']
+      - targets: ['fangbox-metrics.couchlab.me', 'bbg-metrics.couchlab.me']
 
   - job_name: minecraft
     scheme: http
@@ -27,19 +42,19 @@ scrape_configs:
           instance: tekxit
 
   - job_name: pihole
+    scheme: https
+    metrics_path: '/v1/pihole'
     static_configs:
-      - targets: ['bbg.internal:9666']
+      - targets: ['bbg-metrics.couchlab.me']
 
   - job_name: prometheus
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: wud
-    static_configs:
-      - targets: ['wud:3000']
-
   - job_name: node
     scrape_interval: 5s
+    scheme: https
+    metrics_path: /v1/node-exporter
     static_configs:
-      - targets: ['host.docker.internal:9100', 'white-lotus.internal:9100', 'bbg.internal:9100']
+      - targets: ['fangbox-metrics.couchlab.me', 'lotus-metrics.couchlab.me', 'bbg-metrics.couchlab.me']
 
