@@ -22,10 +22,11 @@ services:
       PAPERLESS_DBNAME: ${POSTGRES_DB:?POSTGRES_DB is not set}
       PAPERLESS_DBPASS: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
       PAPERLESS_DBUSER: ${POSTGRES_USER:?POSTGRES_USER is not set}
+      PAPERLESS_REDIRECT_LOGIN_TO_SSO: true
       PAPERLESS_REDIS: redis://pngx-valkey:6379
       PAPERLESS_LOGOUT_REDIRECT_URL: "https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/${AUTHENTIK_SLUG:?AUTHENTIK_SLUG is not set}/end-session/"
-      PAPERLESS_SOCIAL_AUTO_SIGNUP: true
       PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true
+      PAPERLESS_SOCIAL_ACCOUNT_SYNC_GROUPS: true
       PAPERLESS_SOCIALACCOUNT_PROVIDERS: >
           {
             "openid_connect": {
@@ -42,10 +43,10 @@ services:
                   }
                 }
               ],
-              "SCOPE": ["openid", "profile", "email"]
+              "SCOPE": ["openid", "profile", "email", "groups"]
             }
           }
-      PAPERLESS_REDIRECT_LOGIN_TO_SSO: true
+      PAPERLESS_SOCIAL_AUTO_SIGNUP: true
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
@@ -257,7 +258,7 @@ services:
       PDF_OCR_COMPLETE_TAG: "pgpt-ocr-complete"
       PDF_UPLOAD: "false"
 
-      LOG_LEVEL: "DEBUG"
+      LOG_LEVEL: "INFO"
     networks:
       - caddy-proxy
       - ollama-net
