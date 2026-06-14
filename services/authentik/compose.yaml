@@ -1,5 +1,5 @@
 x-authentik: &base-authentik
-    image: ghcr.io/goauthentik/server:2026.5.2
+    image: ghcr.io/goauthentik/server:2026.5.3
     restart: unless-stopped
     shm_size: 512mb
     depends_on:
