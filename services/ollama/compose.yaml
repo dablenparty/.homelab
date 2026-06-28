@@ -1,5 +1,5 @@
 x-ollama: &base-ollama
-  image: ollama/ollama:0.30.8
+  image: ollama/ollama:0.30.11
   user: ${OLLAMA_UID:-1000}:${OLLAMA_GID:-1000}
   devices:
     - /dev/nvidia-caps:/dev/nvidia-caps
