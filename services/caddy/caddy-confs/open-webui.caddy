@@ -3,5 +3,5 @@ handle @open-webui {
   import default-headers
   import unsafe-csp
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  reverse_proxy http://open-webui:8080
 }

@@ -57,7 +57,7 @@ handle @searxng {
   }
 
   # SearXNG
-  reverse_proxy http://{args[0]}:{args[1]} {
+  reverse_proxy http://searxng:8080 {
     health_uri /healthz
     health_interval 1m
     health_timeout 10s

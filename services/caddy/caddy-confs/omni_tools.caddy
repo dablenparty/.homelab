@@ -3,5 +3,5 @@ handle @omni-tools {
   import default-headers
   import unsafe-csp
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  reverse_proxy http://omni-tools:80
 }

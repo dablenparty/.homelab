@@ -1,7 +1,0 @@
-@paperless-gpt host pgpt.{$BASE_DOMAIN}
-handle @paperless-gpt {
-  import default-headers
-  import unsafe-csp
-
-  reverse_proxy http://{args[0]}:{args[1]}
-}

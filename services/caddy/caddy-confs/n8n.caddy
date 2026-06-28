@@ -2,7 +2,7 @@
 handle @n8n {
   import default-headers
 
-  reverse_proxy http://{args[0]}:{args[1]} {
+  reverse_proxy http://n8n:5678 {
     flush_interval -1
 
     health_uri /healthz

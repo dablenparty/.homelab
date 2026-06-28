@@ -49,4 +49,4 @@
 	}
 }
 
-import /etc/caddy/caddy-confs/active/*.caddy
+import /etc/caddy/caddy-confs/base.caddy

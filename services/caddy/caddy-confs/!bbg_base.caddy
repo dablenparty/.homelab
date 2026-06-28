@@ -43,28 +43,5 @@
 *.{$BASE_DOMAIN} {
 	import /etc/caddy/caddy-confs/cloudflare_dns_challenge.caddy
 
-	import /etc/caddy/caddy-confs/13ft.caddy 13ft 5000
-	import /etc/caddy/caddy-confs/authentik.caddy
-	import /etc/caddy/caddy-confs/backrest.caddy
-	import /etc/caddy/caddy-confs/forgejo.caddy forgejo-server 3000
-	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096
-	import /etc/caddy/caddy-confs/metrics.caddy
-	import /etc/caddy/caddy-confs/metube.caddy
-	import /etc/caddy/caddy-confs/n8n.caddy n8n 5678
-	import /etc/caddy/caddy-confs/ollama.caddy ollama 11434
-	import /etc/caddy/caddy-confs/omni_tools.caddy omni-tools 80
-	import /etc/caddy/caddy-confs/open-speed-test.caddy {$FANGBOX_IP} 3000
-	import /etc/caddy/caddy-confs/open-webui.caddy open-webui 8080
-	import /etc/caddy/caddy-confs/paperless-ngx.caddy paperless-ngx 8000
-	import /etc/caddy/caddy-confs/paperless-ai.caddy paperless-ai 3000
-	import /etc/caddy/caddy-confs/paperless-gpt.caddy paperless-gpt 8080
-	import /etc/caddy/caddy-confs/pihole.caddy
-	import /etc/caddy/caddy-confs/prometheus.caddy {$FANGBOX_IP} 9090
-	import /etc/caddy/caddy-confs/grafana.caddy {$FANGBOX_IP} 9091
-	import /etc/caddy/caddy-confs/searxng.caddy searxng 8080
-	import /etc/caddy/caddy-confs/syncthing.caddy fangbox {$FANGBOX_IP} 8384
-	import /etc/caddy/caddy-confs/syncthing.caddy bbg {$BBG_IP} 8384
-	import /etc/caddy/caddy-confs/uptime-kuma.caddy
-	import /etc/caddy/caddy-confs/whoami.caddy traefik-whoami 80
-	import /etc/caddy/caddy-confs/wud.caddy {$FANGBOX_IP} 2300
+  import /etc/caddy/caddy-confs/active/*.caddy
 }

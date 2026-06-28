@@ -3,5 +3,5 @@ handle @prometheus {
   import default-headers
   import strict-csp
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  reverse_proxy http://{$FANGBOX_IP}:9090
 }

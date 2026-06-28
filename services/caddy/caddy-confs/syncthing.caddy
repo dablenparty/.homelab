@@ -1,8 +1,20 @@
-@syncthing-{args[0]} host syncthing-{args[0]}.{$BASE_DOMAIN}
-handle @syncthing-{args[0]} {
+@syncthing-fangbox host syncthing-fangbox.{$BASE_DOMAIN}
+handle @syncthing-fangbox {
   import default-headers
 
-  reverse_proxy https://{args[1]}:{args[2]} {
+  reverse_proxy https://{$FANGBOX_IP}:8384 {
+    transport http {
+      tls_insecure_skip_verify
+    }
+    header_up Host {upstream_hostport}
+  }
+}
+
+@syncthing-bbg host syncthing-bbg.{$BASE_DOMAIN}
+handle @syncthing-bbg {
+  import default-headers
+
+  reverse_proxy https://{$BBG_IP}:8384 {
     transport http {
       tls_insecure_skip_verify
     }

@@ -2,5 +2,5 @@
 handle @13ft {
   import default-headers
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  reverse_proxy http://13ft:5000
 }

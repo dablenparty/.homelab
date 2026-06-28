@@ -2,5 +2,5 @@
 handle @whoami {
   import default-headers
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  reverse_proxy http://traefik-whoami:80
 }

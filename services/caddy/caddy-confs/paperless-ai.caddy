@@ -1,6 +1,0 @@
-@paperless-ai host pai.{$BASE_DOMAIN}
-handle @paperless-ai {
-  import default-headers
-
-  reverse_proxy http://{args[0]}:{args[1]}
-}

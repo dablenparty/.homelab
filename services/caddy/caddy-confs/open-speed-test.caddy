@@ -14,5 +14,5 @@ handle @open-speed-test {
     max_size 10GB
   }
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  reverse_proxy http://{$FANGBOX_IP}:3000
 }
