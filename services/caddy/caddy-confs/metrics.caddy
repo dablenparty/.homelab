@@ -1,0 +1,56 @@
+@bbg host bbg-metrics.{$BASE_DOMAIN}
+handle @bbg {
+  import default-headers
+
+  @denied not client_ip private_ranges
+  respond @denied "You do not have access." 403
+
+  handle_path /v1/authentik {
+    import metrics-http authentik-server:9300
+  }
+
+  handle_path /v1/caddy {
+    import metrics-http caddy:2019
+  }
+
+  handle_path /v1/cAdvisor {
+    import metrics-http cadvisor:8080
+  }
+
+  handle_path /v1/node-exporter {
+    import metrics-http host.docker.internal:9100
+  }
+
+  handle_path /v1/pihole {
+    import metrics-http pihole6-exporter:9666
+  }
+
+}
+
+@fangbox host fangbox-metrics.{$BASE_DOMAIN}
+handle @fangbox {
+  import default-headers
+
+  @denied not client_ip private_ranges
+  respond @denied "You do not have access." 403
+
+  handle_path /v1/cAdvisor {
+    import metrics-http {$FANGBOX_IP}:8080
+  }
+
+  handle_path /v1/node-exporter {
+    import metrics-http {$FANGBOX_IP}:9100
+  }
+}
+
+@lotus host lotus-metrics.{$BASE_DOMAIN}
+handle @lotus {
+  import default-headers
+
+  @denied not client_ip private_ranges
+  respond @denied "You do not have access." 403
+
+  handle_path /v1/node-exporter {
+    import metrics-http {$LOTUS_IP}:9100
+  }
+}
