@@ -3,5 +3,5 @@ handle @backrest {
   import default-headers
   import unsafe-csp
 
-  import outpost-auth http://{args[0]}:{args[1]}
+  import outpost-auth http://{$BBG_IP}:9898
 }

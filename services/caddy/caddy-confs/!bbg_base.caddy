@@ -45,11 +45,11 @@
 
 	import /etc/caddy/caddy-confs/13ft.caddy 13ft 5000
 	import /etc/caddy/caddy-confs/authentik.caddy
-	import /etc/caddy/caddy-confs/backrest.caddy {$BBG_IP} 9898
+	import /etc/caddy/caddy-confs/backrest.caddy
 	import /etc/caddy/caddy-confs/forgejo.caddy forgejo-server 3000
 	import /etc/caddy/caddy-confs/jellyfin.caddy {$BBG_IP} 8096
 	import /etc/caddy/caddy-confs/metrics.caddy
-	import /etc/caddy/caddy-confs/metube.caddy {$FANGBOX_IP} 8081
+	import /etc/caddy/caddy-confs/metube.caddy
 	import /etc/caddy/caddy-confs/n8n.caddy n8n 5678
 	import /etc/caddy/caddy-confs/ollama.caddy ollama 11434
 	import /etc/caddy/caddy-confs/omni_tools.caddy omni-tools 80

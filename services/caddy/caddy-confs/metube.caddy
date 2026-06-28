@@ -3,5 +3,5 @@ handle @metube {
   import default-headers
   import unsafe-csp
 
-  reverse_proxy http://{args[0]}:{args[1]}
+  import outpost-auth http://{$FANGBOX_IP}:8081
 }
