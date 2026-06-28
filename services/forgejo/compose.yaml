@@ -21,7 +21,7 @@ x-forgejo-server: &base-forgejo-server
       - /etc/localtime:/etc/localtime:ro
 
 x-forgejo-runner: &base-forgejo-runner
-    image: code.forgejo.org/forgejo/runner:12.11.1
+    image: code.forgejo.org/forgejo/runner:12.12.0
     networks:
       - forgejo-net
     volumes:
