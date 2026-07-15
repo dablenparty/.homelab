@@ -39,7 +39,7 @@ services:
       - /run
 
   whatsupdocker:
-    image: ghcr.io/getwud/wud:8.2.2
+    image: ghcr.io/getwud/wud:8.3.0
     container_name: wud
     restart: unless-stopped
     depends_on:
