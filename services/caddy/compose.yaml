@@ -88,8 +88,9 @@ services:
       - ./caddy-confs:/etc/caddy/caddy-confs
       - ./certs:/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.${BASE_DOMAIN}
     networks:
-      - caddy-proxy
-      - ollama-net
+      caddy-proxy:
+        ipv4_address: 10.1.1.2
+      ollama-net:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
