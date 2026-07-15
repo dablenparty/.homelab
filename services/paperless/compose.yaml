@@ -228,7 +228,7 @@ services:
       wud.watch.digest: true
 
   paperless-gpt:
-    image: ghcr.io/icereed/paperless-gpt:v0.25.1
+    image: ghcr.io/icereed/paperless-gpt:v0.26.1
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
