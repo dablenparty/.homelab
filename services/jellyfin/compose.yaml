@@ -1,3 +1,9 @@
+networks:
+  auth-net:
+    external: true
+  caddy-proxy:
+    external: true
+
 services:
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:10.11.11
@@ -46,7 +52,9 @@ services:
       # - 10.11.0
       wud.tag.transform: '^(version-)?(\d+\.\d+\.\d+)(.*)$$ => $$2'
       wud.link.template: 'https://github.com/jellyfin/jellyfin/releases/tag/v$${major}.$${minor}.$${patch}'
-    network_mode: host
+    networks:
+      - auth-net
+      - caddy-proxy
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       PUID: ${JELLYFIN_UID:?JELLYFIN_UID is not set}

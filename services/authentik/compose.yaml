@@ -16,7 +16,7 @@ x-authentik: &base-authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
       AUTHENTIK_REDIS__HOST: authentik-valkey
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY is not set}
-      DOCKER_HOST: http://authentik-docksock:2375
+      DOCKER_HOST: tcp://authentik-docksock:2375
 
 networks:
   auth-net:

@@ -18,9 +18,9 @@ handle @jellyfin {
     X-XSS-Protection 1
   }
 
-  reverse_proxy http://{$BBG_IP}:8096 {
+  reverse_proxy http://jellyfin:8096 {
     health_uri /health
-    health_interval 1m
+    health_interval 30s
     health_timeout 10s
     health_status 2xx
   }
