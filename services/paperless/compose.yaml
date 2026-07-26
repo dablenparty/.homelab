@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.15
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.0.3
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -17,7 +17,16 @@ services:
       PAPERLESS_ADMIN_MAIL: ${PAPERLESS_ADMIN_MAIL:?PAPERLESS_ADMIN_MAIL is not set}
       PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD:?PAPERLESS_ADMIN_PASSWORD is not set}
       PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER:-admin}
+
+      PAPERLESS_AI_ENABLED: true
+      PAPERLESS_AI_LLM_BACKEND: ollama
+      PAPERLESS_AI_LLM_EMBEDDING_BACKEND: ollama
+      PAPERLESS_AI_LLM_EMBEDDING_MODEL: qwen3-embedding:8b
+      PAPERLESS_AI_LLM_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
+      PAPERLESS_AI_LLM_ENDPOINT: http://ollama:11434
+
       PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
+      PAPERLESS_CONSUMER_DELETE_DUPLICATES: true
       PAPERLESS_DBHOST: pngx-postgres
       PAPERLESS_DBNAME: ${POSTGRES_DB:?POSTGRES_DB is not set}
       PAPERLESS_DBPASS: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
@@ -25,6 +34,7 @@ services:
       PAPERLESS_REDIRECT_LOGIN_TO_SSO: true
       PAPERLESS_REDIS: redis://pngx-valkey:6379
       PAPERLESS_LOGOUT_REDIRECT_URL: "https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/${AUTHENTIK_SLUG:?AUTHENTIK_SLUG is not set}/end-session/"
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY:?PAPERLESS_SECRET_KEY is not set}
       PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: true
       PAPERLESS_SOCIAL_ACCOUNT_SYNC_GROUPS: true
       PAPERLESS_SOCIALACCOUNT_PROVIDERS: >
@@ -50,6 +60,7 @@ services:
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+      PAPERLESS_TRUSTED_PROXIES: 10.1.1.2
       PAPERLESS_URL: "https://pngx.${BASE_DOMAIN:?BASE_DOMAIN is not set}"
       TZ: ${TZ:?TZ is not set}
       USERMAP_GID: ${PAPERLESS_GID:-1000}
@@ -66,6 +77,7 @@ services:
     networks:
       - caddy-proxy
       - pngx-net
+      - ollama-net
     # ports:
     #   - "8000:8000"
     volumes:
@@ -175,60 +187,60 @@ services:
 
   # WARN: this is unmaintained. the author is working on a rewrite and Paperless is integrating
   # AI themselves at some point, so we'll see what happens first.
-  paperless-ai:
-    image: ghcr.io/ivanzud/paperless-ai:latest
-    container_name: paperless-ai
-    restart: unless-stopped
-    # FIXME: pai health check
-    # healthcheck:
-    #   test: ['CMD-SHELL', 'curl -fsSL --request GET http://localhost:8080/health 2>&1 | grep "healthy"']
-    #   interval: 1m
-    #   timeout: 10s
-    #   retries: 5
-    #   start_period: 30s
-    #   start_interval: 1s
-    stop_grace_period: 30s
-    init: true
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges=true
-    depends_on:
-      paperless:
-        condition: service_healthy
-    environment:
-      PUID: ${PAPERLESS_UID:-1000}
-      PGID: ${PAPERLESS_GID:-1000}
-      ADD_AI_PROCESSED_TAG: yes
-      AI_PROCESSED_TAG_NAME: pai-complete
-      AI_PROVIDER: ollama
-      OLLAMA_API_URL: http://ollama:11434
-      OLLAMA_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
-      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN:?PAPERLESS_API_TOKEN is not set}
-      PAPERLESS_API_URL: http://paperless-ngx:8000/api
-      PAPERLESS_PUBLIC_URL: https://pngx.${BASE_DOMAIN}
-      PAPERLESS_URL: http://paperless-ngx:8000
-      PAPERLESS_USERNAME: ${PAPERLESS_AI_USERNAME:-admin}
-      PROCESS_PREDEFINED_DOCUMENTS: yes
-      TAGS: pai-auto
-      RAG_SERVICE_ENABLED: true
-      RAG_SERVICE_URL: http://localhost:8000
-      SCAN_INTERVAL: '*/30 * * * *'
-      ALLOW_REMOTE_SETUP: yes
-      COOKIE_SECURE_MODE: auto
-      TRUST_PROXY: yes
-    networks:
-      - caddy-proxy
-      - ollama-net
-      - pngx-net
-    volumes:
-      - ${PAPERLESS_DATA_DIR}/paperless-ai/data:/app/data
-    labels:
-      wud.tag.include: 'latest'
-      wud.watch.digest: true
+  # paperless-ai:
+  #   image: ghcr.io/ivanzud/paperless-ai:latest
+  #   container_name: paperless-ai
+  #   restart: unless-stopped
+  #   # FIXME: pai health check
+  #   # healthcheck:
+  #   #   test: ['CMD-SHELL', 'curl -fsSL --request GET http://localhost:8080/health 2>&1 | grep "healthy"']
+  #   #   interval: 1m
+  #   #   timeout: 10s
+  #   #   retries: 5
+  #   #   start_period: 30s
+  #   #   start_interval: 1s
+  #   stop_grace_period: 30s
+  #   init: true
+  #   cap_drop:
+  #     - ALL
+  #   security_opt:
+  #     - no-new-privileges=true
+  #   depends_on:
+  #     paperless:
+  #       condition: service_healthy
+  #   environment:
+  #     PUID: ${PAPERLESS_UID:-1000}
+  #     PGID: ${PAPERLESS_GID:-1000}
+  #     ADD_AI_PROCESSED_TAG: yes
+  #     AI_PROCESSED_TAG_NAME: pai-complete
+  #     AI_PROVIDER: ollama
+  #     OLLAMA_API_URL: http://ollama:11434
+  #     OLLAMA_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
+  #     PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN:?PAPERLESS_API_TOKEN is not set}
+  #     PAPERLESS_API_URL: http://paperless-ngx:8000/api
+  #     PAPERLESS_PUBLIC_URL: https://pngx.${BASE_DOMAIN}
+  #     PAPERLESS_URL: http://paperless-ngx:8000
+  #     PAPERLESS_USERNAME: ${PAPERLESS_AI_USERNAME:-admin}
+  #     PROCESS_PREDEFINED_DOCUMENTS: yes
+  #     TAGS: pai-auto
+  #     RAG_SERVICE_ENABLED: true
+  #     RAG_SERVICE_URL: http://localhost:8000
+  #     SCAN_INTERVAL: '*/30 * * * *'
+  #     ALLOW_REMOTE_SETUP: yes
+  #     COOKIE_SECURE_MODE: auto
+  #     TRUST_PROXY: yes
+  #   networks:
+  #     - caddy-proxy
+  #     - ollama-net
+  #     - pngx-net
+  #   volumes:
+  #     - ${PAPERLESS_DATA_DIR}/paperless-ai/data:/app/data
+  #   labels:
+  #     wud.tag.include: 'latest'
+  #     wud.watch.digest: true
 
   paperless-gpt:
-    image: ghcr.io/icereed/paperless-gpt:v0.26.1
+    image: ghcr.io/icereed/paperless-gpt:v0.27.0
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
