@@ -13,7 +13,7 @@ secrets:
 services:
   # NOTE: install prometheus-node-exporter outside of docker
   prometheus:
-    image: prom/prometheus:v3.13.1
+    image: prom/prometheus:v3.13.2
     container_name: prometheus
     user: 1000:1000
     restart: unless-stopped
@@ -75,9 +75,11 @@ services:
       GF_AUTH_GENERIC_OAUTH_API_URL: "https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/userinfo/"
       GF_AUTH_SIGNOUT_REDIRECT_URL: "https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/grafana/end-session/"
       # Optionally enable auto-login (bypasses Grafana login screen)
-      GF_AUTH_OAUTH_AUTO_LOGIN: "true"
+      # WARN: I keep this disabled to allow a break-glass admin account to exist
+      GF_AUTH_OAUTH_AUTO_LOGIN: "false"
       # Optionally map user groups to Grafana roles
       GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "contains(entitlements[*], 'Grafana Admins') && 'Admin' || contains(entitlements[*], 'Grafana Editors') && 'Editor' || 'Viewer'"
+      GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_PATH: "contains(keys(@), 'email') && email || join('',[name,'@unknown'])"
       # Required if Grafana is running behind a reverse proxy
       GF_SERVER_ROOT_URL: "https://grafana.${BASE_DOMAIN:?BASE_DOMAIN is not set}"
       GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
