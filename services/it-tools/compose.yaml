@@ -1,0 +1,12 @@
+networks:
+  caddy-proxy:
+    external: true
+
+services:
+  it-tools:
+    image: ghcr.io/corentinth/it-tools:latest
+    container_name: it-tools
+    restart: unless-stopped
+    networks:
+      - caddy-proxy
+

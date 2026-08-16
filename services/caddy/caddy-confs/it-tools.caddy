@@ -1,0 +1,7 @@
+@it-tools host it-tools.{$BASE_DOMAIN}
+handle @it-tools {
+  import default-headers
+  import strict-csp
+
+  reverse_proxy http://it-tools:80
+}
