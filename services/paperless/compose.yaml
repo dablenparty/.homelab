@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:3.0.3
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.0.5
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -90,7 +90,7 @@ services:
       wud.link.template: 'https://github.com/paperless-ngx/paperless-ngx/releases/tag/v$${major}.$${minor}.$${patch}'
 
   postgres:
-    image: postgres:18.4-alpine
+    image: postgres:18.6-alpine
     restart: unless-stopped
     container_name: pngx-postgres
     hostname: pngx-postgres
@@ -149,7 +149,7 @@ services:
 
   # gotenberg service that paperless uses for document conversion
   gotenberg:
-    image: docker.io/gotenberg/gotenberg:8.34.0
+    image: docker.io/gotenberg/gotenberg:8.36.0
     container_name: gotenberg
     restart: unless-stopped
     command:
