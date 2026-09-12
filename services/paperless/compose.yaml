@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:3.0.5
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.1.3
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -119,7 +119,7 @@ services:
       wud.link.template: 'https://www.postgresql.org/docs/release/$${major}.$${minor}/'
 
   valkey:
-    image: ghcr.io/valkey-io/valkey:9.1.1-alpine
+    image: ghcr.io/valkey-io/valkey:9.1.2-alpine
     container_name: pngx-valkey
     hostname: pngx-valkey
     command: valkey-server --save 30 1 --loglevel warning
@@ -149,7 +149,7 @@ services:
 
   # gotenberg service that paperless uses for document conversion
   gotenberg:
-    image: docker.io/gotenberg/gotenberg:8.36.0
+    image: docker.io/gotenberg/gotenberg:8.37.0
     container_name: gotenberg
     restart: unless-stopped
     command:
@@ -247,6 +247,13 @@ services:
       paperless:
         condition: service_healthy
     environment:
+      # integrated AI processing can do this, just need OCR
+      AUTO_GENERATE_CORRESPONDENTS: false
+      AUTO_GENERATE_CREATED_DATE: false
+      AUTO_GENERATE_DOCUMENT_TYPE: false
+      AUTO_GENERATE_TAGS: false
+      AUTO_GENERATE_TITLE: false
+
       PAPERLESS_BASE_URL: "http://paperless:8000"
       PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN:?PAPERLESS_API_TOKEN is not set}
       PAPERLESS_PUBLIC_URL: "https://pngx.${BASE_DOMAIN:?BASE_DOMAIN is not set}"
