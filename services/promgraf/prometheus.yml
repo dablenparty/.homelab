@@ -34,12 +34,13 @@ scrape_configs:
       - targets: ['fangbox-metrics.couchlab.me', 'bbg-metrics.couchlab.me']
 
   - job_name: minecraft
-    scheme: http
+    scheme: https
+    metrics_path: /v1/mc/craftoria
     static_configs:
-      - targets: ['bbg.internal:19565']
+      - targets: ['bbg-metrics.couchlab.me']
         labels:
-          application: 'tekxit'
-          instance: tekxit
+          application: 'mc'
+          instance: craftoria
 
   - job_name: pihole
     scheme: https
