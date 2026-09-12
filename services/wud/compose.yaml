@@ -39,7 +39,7 @@ services:
       - /run
 
   whatsupdocker:
-    image: ghcr.io/getwud/wud:8.3.1
+    image: ghcr.io/getwud/wud:9.0.2
     container_name: wud
     restart: unless-stopped
     depends_on:
@@ -50,6 +50,14 @@ services:
       WUD_AUTH_OIDC_AUTHENTIK_CLIENTSECRET: ${AUTHENTIK_CLIENT_SECRET:?AUTHENTIK_CLIENT_SECRET is not set}
       WUD_AUTH_OIDC_AUTHENTIK_DISCOVERY: https://auth.${BASE_DOMAIN:?BASE_DOMAIN is not set}/application/o/wud/.well-known/openid-configuration
       WUD_AUTH_OIDC_AUTHENTIK_REDIRECT: true
+      WUD_AUTH_OIDC_AUTHENTIK_GROUPSCLAIM: groups
+      WUD_AUTH_OIDC_AUTHENTIK_ADMINGROUP: Monitoring Admins
+      WUD_AUTH_OIDC_AUTHENTIK_RWGROUP: Monitoring Managers
+      WUD_AUTH_OIDC_AUTHENTIK_ROGROUP: Monitoring
+      # not all OIDC users have email
+      WUD_AUTH_OIDC_AUTHENTIK_USERNAMECLAIM: preferred_username
+      # configured automatically based on the envvars above
+      # WUD_AUTH_OIDC_AUTHENTIK_SCOPE: "openid email profile groups"
 
       WUD_REGISTRY_LSCR_PUBLIC_USERNAME__FILE: /run/secrets/lscr-private-username
       WUD_REGISTRY_LSCR_PUBLIC_TOKEN__FILE: /run/secrets/lscr-private-token
