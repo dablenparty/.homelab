@@ -25,6 +25,9 @@ handle @bbg {
     import metrics-http pihole6-exporter:9666
   }
 
+  handle_path /v1/mc/craftoria {
+    import metrics-http craftoria-mc-server:19565
+  }
 }
 
 @fangbox host fangbox-metrics.{$BASE_DOMAIN}
