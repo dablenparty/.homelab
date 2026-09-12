@@ -1,0 +1,13 @@
+[Unit]
+Description=Craftoria Server Restarter
+Wants=docker.target
+After=docker.target
+
+[Service]
+Type=exec
+Restart=on-failure
+ExecStart=/home/hunterd/dotfiles/homelab/services/craftoria-mc-server/systemd/craftoria-server-restarter.zsh
+EnvironmentFile=/home/hunterd/dotfiles/homelab/services/craftoria-mc-server/systemd/craftoria-server-restarter.env
+
+[Install]
+WantedBy=multi-user.target

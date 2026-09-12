@@ -1,0 +1,99 @@
+networks:
+  caddy-proxy:
+    external: true
+  mc-net:
+    external: true
+
+secrets:
+  rcon-passwd:
+    file: ./secrets/rcon-passwd
+  mc-whitelist:
+    file: ./secrets/mc-whitelist
+
+services:
+  lazymc:
+    image: ghcr.io/joesturge/lazymc-docker-proxy:v2.7.5
+    container_name: craftoria-lazymc
+    networks:
+      mc-net:
+        ipv4_address: 10.64.0.2
+    restart: unless-stopped
+    # sometimes, lazymc doesn't stop the server on startup
+    depends_on:
+      mc:
+        condition: service_started
+    labels:
+      wud.tag.include: '^v\d+\.\d+\.\d+'
+      wud.link.template: 'https://github.com/joesturge/lazymc-docker-proxy/releases/tag/v$${major}.$${minor}.$${patch}'
+    volumes:
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/server:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # ports:
+    #   - ${MC_PORT:-25565}:${MC_PORT:-25565}
+
+  mc:
+    image: ghcr.io/itzg/minecraft-server:2026.9.0-java25
+    container_name: craftoria-mc-server
+    user: "1000"
+    tty: true
+    stdin_open: true
+    networks:
+      caddy-proxy: {}
+      mc-net:
+        ipv4_address: 10.64.0.3
+    # handled by lazymc
+    restart: no
+    ports:
+      - "127.0.0.1:25579:25575"
+      # prometheus metrics
+      # - 19569:19565
+    labels:
+      # Enable lazymc on this container
+      lazymc.enabled: true
+      # Required to find the container to manage it
+      lazymc.group: mc
+      # Point to the server address of the Minecraft server (must be accessible from container)
+      lazymc.server.address: mc:${MC_PORT:-25565}
+      # The minecraft client version
+      lazymc.public.version: ${MC_VERSION:?MC_VERSION is not set}
+      # https://minecraft.fandom.com/wiki/Protocol_version#Java_Edition_2
+      lazymc.public.protocol: 767
+      # Only wakes the server if the player is whitelisted
+      lazymc.server.wake_whitelist: true
+      # defaults to 120 seconds (2 minutes)
+      lazymc.time.minimum_online_time: ${LAZYMC_MIN_ONLINE_TIME:-120}
+      # defaults to 600 seconds (10 minutes)
+      lazymc.time.sleep_after: ${LAZYMC_SLEEP_AFTER:-600}
+
+      wud.tag.include: '^\d+\.\d+\.\d+-java25$$'
+      wud.tag.transform: '^(\d+\.\d+\.\d+)-java25$$ => $$1'
+      wud.link.template: 'https://github.com/itzg/docker-minecraft-server/releases/tag/$${major}.$${minor}.$${patch}'
+    secrets:
+      - rcon-passwd
+      - mc-whitelist
+    environment:
+      EULA: "TRUE"
+      TYPE: "CUSTOM"
+      # FIXME: this jar downloads the mods; it's pretty cool, but it can nuke custom additions
+      CUSTOM_SERVER: "/data/serverstarter-2.4.1.jar"
+      VERSION: "${MC_VERSION:?MC_VERSION is not set}"
+      BROADCAST_RCON_TO_OPS: "false"
+      DIFFICULTY: "3"
+      ENABLE_COMMAND_BLOCK: "true"
+      LEVEL: ${WORLD_DIR:?WORLD_DIR is not set}
+      # NOTE: keep these the same when using Aikar's flags
+      INIT_MEMORY: "${INIT_MEMORY:-${MAX_MEMORY:-8192M}}"
+      MAX_MEMORY: "${MAX_MEMORY:-8192M}"
+      MOTD: "${MOTD:?MOTD is not set}"
+      OPS: |
+        ${OWNER_PLAYER_NAME:?OWNER_PLAYER_NAME is not set}
+      RCON_PASSWORD_FILE: /run/secrets/rcon-passwd
+      SERVER_PORT: ${MC_PORT:-25565}
+      # seconds
+      STOP_SERVER_ANNOUNCE_DELAY: 30
+      TZ: ${TZ:-Etc/UTC}
+      USE_MEOWICE_FLAGS: "true"
+      VIEW_DISTANCE: ${VIEW_DISTANCE:-12}
+      WHITELIST_FILE: /run/secrets/mc-whitelist
+    volumes:
+      - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/data

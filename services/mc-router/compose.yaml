@@ -1,0 +1,26 @@
+networks:
+  # even though this isn't used here, it's necessary for the servers
+  mc-net:
+    name: mc-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.64.0.0/16
+
+services:
+  router:
+    image: ghcr.io/itzg/mc-router:1.46.5
+    restart: unless-stopped
+    environment:
+      MAPPING: |
+        tekxit4.${BASE_DOMAIN:?BASE_DOMAIN is not set}=tekxit-lazy-mc:25565
+        craftoria.${BASE_DOMAIN:?BASE_DOMAIN is not set}=craftoria-lazymc:25565
+    networks:
+      mc-net:
+        ipv4_address: 10.64.0.4
+    ports:
+      - 25565:25565
+      # - 25569:25559
+    labels:
+      wud.tag.include: '^\d+\.\d+\.\d+$$'
+      wud.link.template: 'https://github.com/itzg/mc-router/releases/tag/v$${major}.$${minor}.$${patch}'
