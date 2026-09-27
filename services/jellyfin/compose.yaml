@@ -6,7 +6,7 @@ networks:
 
 services:
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:10.11.11
+    image: lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50
     container_name: jellyfin
     restart: unless-stopped
     runtime: nvidia
@@ -41,10 +41,8 @@ services:
       # - start with a date (YYYY-MM-dd)
       # - start with amd64, arm64, amd64v8, or arm64v8
       # - contain "latest" or "nightly"
-      # - end with an Ubuntu version identifier (e.g. ubu2404)
-      #   - not ALL ubuntu tags are ignored, just most
       # - end with an lsio version identifier (e.g. ls305)
-      wud.tag.exclude: '^((20\d{2}\.?\d{1,2}\.?\d{1,2})|((amd|arm)64(v8)?-)?((latest|nightly|unstable)-?)?(version-)?(\d+(\.\d+\.\d+)?((-(amd|arm)64(v8)?)?\.(\d+-?)+|ubu\d+(-ls\d+)?))?)$$'
+      wud.tag.exclude: '^((20\d{2}\.?\d{1,2}\.?\d{1,2})|((amd|arm)64(v8)?-)?((latest|nightly|unstable)-?)?(version-)?(\d+(\.\d+\.\d+)?((-(amd|arm)64(v8)?)?\.(\d+-?)+))?)$$'
       # extract the major, minor, and patch from the allowable patterns, e.g.:
       # - version-10.11.0ubu2404
       # - version-10.11.0
