@@ -1,4 +1,4 @@
-@it-tools host it-tools.{$BASE_DOMAIN}
+@it-tools host itt.{$BASE_DOMAIN}
 handle @it-tools {
   import default-headers
   import strict-csp
