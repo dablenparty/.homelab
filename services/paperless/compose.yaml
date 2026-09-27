@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:3.1.3
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.2.1
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -185,62 +185,9 @@ services:
       wud.tag.transform: '^(\d+\.\d+\.\d+)\.\d+$$ => $$1'
       wud.link.template: 'https://tika.apache.org/$${major}.$${minor}.$${patch}/index.html'
 
-  # WARN: this is unmaintained. the author is working on a rewrite and Paperless is integrating
-  # AI themselves at some point, so we'll see what happens first.
-  # paperless-ai:
-  #   image: ghcr.io/ivanzud/paperless-ai:latest
-  #   container_name: paperless-ai
-  #   restart: unless-stopped
-  #   # FIXME: pai health check
-  #   # healthcheck:
-  #   #   test: ['CMD-SHELL', 'curl -fsSL --request GET http://localhost:8080/health 2>&1 | grep "healthy"']
-  #   #   interval: 1m
-  #   #   timeout: 10s
-  #   #   retries: 5
-  #   #   start_period: 30s
-  #   #   start_interval: 1s
-  #   stop_grace_period: 30s
-  #   init: true
-  #   cap_drop:
-  #     - ALL
-  #   security_opt:
-  #     - no-new-privileges=true
-  #   depends_on:
-  #     paperless:
-  #       condition: service_healthy
-  #   environment:
-  #     PUID: ${PAPERLESS_UID:-1000}
-  #     PGID: ${PAPERLESS_GID:-1000}
-  #     ADD_AI_PROCESSED_TAG: yes
-  #     AI_PROCESSED_TAG_NAME: pai-complete
-  #     AI_PROVIDER: ollama
-  #     OLLAMA_API_URL: http://ollama:11434
-  #     OLLAMA_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
-  #     PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN:?PAPERLESS_API_TOKEN is not set}
-  #     PAPERLESS_API_URL: http://paperless-ngx:8000/api
-  #     PAPERLESS_PUBLIC_URL: https://pngx.${BASE_DOMAIN}
-  #     PAPERLESS_URL: http://paperless-ngx:8000
-  #     PAPERLESS_USERNAME: ${PAPERLESS_AI_USERNAME:-admin}
-  #     PROCESS_PREDEFINED_DOCUMENTS: yes
-  #     TAGS: pai-auto
-  #     RAG_SERVICE_ENABLED: true
-  #     RAG_SERVICE_URL: http://localhost:8000
-  #     SCAN_INTERVAL: '*/30 * * * *'
-  #     ALLOW_REMOTE_SETUP: yes
-  #     COOKIE_SECURE_MODE: auto
-  #     TRUST_PROXY: yes
-  #   networks:
-  #     - caddy-proxy
-  #     - ollama-net
-  #     - pngx-net
-  #   volumes:
-  #     - ${PAPERLESS_DATA_DIR}/paperless-ai/data:/app/data
-  #   labels:
-  #     wud.tag.include: 'latest'
-  #     wud.watch.digest: true
-
+  # I still use this for the OCR
   paperless-gpt:
-    image: ghcr.io/icereed/paperless-gpt:v0.27.0
+    image: ghcr.io/icereed/paperless-gpt:v0.28.0
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
