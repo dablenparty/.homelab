@@ -1,7 +1,16 @@
 @it-tools host itt.{$BASE_DOMAIN}
 handle @it-tools {
   import default-headers
-  import strict-csp
+
+	header {
+		Content-Security-Policy "
+          default-src 'self' *.{$BASE_DOMAIN} https: data: blob:;
+          frame-ancestors 'none';
+          object-src 'none';
+          script-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes';
+          style-src 'self' *.{$BASE_DOMAIN} 'unsafe-inline';
+      "
+	}
 
   reverse_proxy http://it-tools:80
 }
