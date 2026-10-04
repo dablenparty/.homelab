@@ -12,11 +12,8 @@
 #
 # And that it is not in use by anything else.
 networks:
-  minecraft-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.64.0.0/16
+  mc-net:
+    external: true
 
 secrets:
   rcon-passwd:
@@ -27,8 +24,8 @@ services:
     image: ghcr.io/joesturge/lazymc-docker-proxy:v2.7.5
     container_name: tekxit-lazymc
     networks:
-      minecraft-network:
-        ipv4_address: 10.64.0.2
+      mc-net:
+        # ipv4_address: 10.64.0.2
     restart: unless-stopped
     # sometimes, lazymc doesn't stop the server on startup
     depends_on:
@@ -40,24 +37,24 @@ services:
     volumes:
       - ${MC_DATA_VOLUME:?MC_DATA_VOLUME is not set}:/server:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports:
-      - 25565:${MC_PORT:-25565}
+    # ports:
+    #   - 25565:${MC_PORT:-25565}
 
   mc:
-    image: ghcr.io/itzg/minecraft-server:2026.1.1-java25
+    image: ghcr.io/itzg/minecraft-server:2026.8.2-java25
     container_name: tekxit-mc-server
     user: "1000"
     tty: true
     stdin_open: true
     networks:
-      minecraft-network:
-        ipv4_address: 10.64.0.3
+      mc-net:
+        # ipv4_address: 10.64.0.3
     # handled by lazymc
     restart: no
-    ports:
-      - "127.0.0.1:25575:25575"
-      # prometheus metrics
-      - 19565:19565
+    # ports:
+      # - "127.0.0.1:25575:25575"
+      # # prometheus metrics
+      # - 19565:19565
     labels:
       # Enable lazymc on this container
       lazymc.enabled: true
