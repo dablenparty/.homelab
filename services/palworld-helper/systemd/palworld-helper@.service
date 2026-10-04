@@ -1,0 +1,14 @@
+[Unit]
+Description=Palworld Helper Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=exec
+User=%i
+Restart=on-failure
+WorkingDirectory=/home/%i/dotfiles/homelab/services/palworld-helper
+ExecStart=/home/%i/.cargo/bin/cargo run --release
+
+[Install]
+WantedBy=multi-user.target
