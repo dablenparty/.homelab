@@ -1,0 +1,7 @@
+@palworld-goomba host palworld-goomba.{$BASE_DOMAIN}
+handle @palworld-goomba {
+  import default-headers
+  import unsafe-csp
+
+  import outpost-auth http://{$BBG_IP}:42069
+}
