@@ -3,5 +3,5 @@ handle @grafana {
   import default-headers
   import unsafe-csp
 
-  reverse_proxy http://{$FANGBOX_IP}:9091
+  reverse_proxy http://{$ZENBOOK_IP}:9091
 }

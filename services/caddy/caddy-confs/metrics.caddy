@@ -57,3 +57,19 @@ handle @lotus {
     import metrics-http {$LOTUS_IP}:9100
   }
 }
+
+@zenbook host zenbook-metrics.{$BASE_DOMAIN}
+handle @zenbook {
+  import default-headers
+
+  @denied not client_ip private_ranges
+  respond @denied "You do not have access." 403
+
+  handle_path /v1/cAdvisor {
+    import metrics-http {$ZENBOOK_IP}:8080
+  }
+
+  handle_path /v1/node-exporter {
+    import metrics-http {$ZENBOOK_IP}:9100
+  }
+}

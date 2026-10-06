@@ -11,5 +11,5 @@ handle @upkuma {
       "
    }
 
-  import outpost-auth http://{$FANGBOX_IP}:3001
+  import outpost-auth http://{$ZENBOOK_IP}:3001
 }

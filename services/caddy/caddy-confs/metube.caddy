@@ -3,5 +3,5 @@ handle @metube {
   import default-headers
   import unsafe-csp
 
-  import outpost-auth http://{$FANGBOX_IP}:8081
+  import outpost-auth http://metube:8081
 }
