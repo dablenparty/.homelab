@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:3.2.1
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.3.0
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -187,7 +187,7 @@ services:
 
   # I still use this for the OCR
   paperless-gpt:
-    image: ghcr.io/icereed/paperless-gpt:v0.28.0
+    image: ghcr.io/icereed/paperless-gpt:v0.29.0
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
@@ -219,6 +219,7 @@ services:
 
       AUTO_OCR_TAG: "pgpt-ocr-auto"
       AUTO_TAG: "pgpt-auto"
+      AUTO_TAG_COMPLETE: "pgpt-auto-complete"
       MANUAL_TAG: "pgpt-manual"
       PDF_OCR_TAGGING: "true"
       PDF_OCR_COMPLETE_TAG: "pgpt-ocr-complete"
