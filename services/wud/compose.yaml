@@ -64,10 +64,12 @@ services:
 
       WUD_TRIGGER_HTTP_N8N_URL: ${N8N_WEBHOOK_URL:?N8N_WEBHOOK_URL is not set}
 
-      WUD_WATCHER_FANGBOX_HOST: wud-socket-proxy
-      WUD_WATCHER_FANGBOX_PORT: 2375
-      WUD_WATCHER_FANGBOX_SOCKET: tcp://wud-socket-proxy
-      WUD_WATCHER_FANGBOX_CRON: '0 */8 * * *'
+      WUD_WATCHER_ZENBOOK_HOST: wud-socket-proxy
+      WUD_WATCHER_ZENBOOK_PORT: 2375
+      WUD_WATCHER_ZENBOOK_SOCKET: tcp://wud-socket-proxy
+      WUD_WATCHER_ZENBOOK_CRON: '0 */8 * * *'
+
+      # TODO: new fangbox
 
       WUD_WATCHER_BBG_HOST: ${BBG_HOST:?BBG_HOST is not set}
       WUD_WATCHER_BBG_PORT: 2375
