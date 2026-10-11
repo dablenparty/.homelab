@@ -31,7 +31,7 @@ scrape_configs:
       - source_labels: ['name']
         target_label: 'container'
     static_configs:
-      - targets: ['fangbox-metrics.couchlab.me', 'bbg-metrics.couchlab.me']
+      - targets: ['fangbox-metrics.couchlab.me', 'bbg-metrics.couchlab.me', 'zenbook-metrics.couchlab.me']
 
   - job_name: minecraft
     scheme: https
@@ -57,5 +57,5 @@ scrape_configs:
     scheme: https
     metrics_path: /v1/node-exporter
     static_configs:
-      - targets: ['fangbox-metrics.couchlab.me', 'lotus-metrics.couchlab.me', 'bbg-metrics.couchlab.me']
+      - targets: ['fangbox-metrics.couchlab.me', 'lotus-metrics.couchlab.me', 'bbg-metrics.couchlab.me', 'zenbook-metrics.couchlab.me']
 
