@@ -7,7 +7,7 @@
 
 x-forgejo-server: &base-forgejo-server
     # NOTE: I can't get the -rootless versions to work, especially with the runner
-    image: codeberg.org/forgejo/forgejo:16.0.5
+    image: codeberg.org/forgejo/forgejo:17.0.0
     healthcheck:
       test: curl -fSs http://localhost:3000/api/healthz
       interval: 10s
