@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:3.3.0
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.3.2
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
@@ -149,7 +149,7 @@ services:
 
   # gotenberg service that paperless uses for document conversion
   gotenberg:
-    image: docker.io/gotenberg/gotenberg:8.37.0
+    image: docker.io/gotenberg/gotenberg:8.38.1
     container_name: gotenberg
     restart: unless-stopped
     command:
@@ -187,7 +187,7 @@ services:
 
   # I still use this for the OCR
   paperless-gpt:
-    image: ghcr.io/icereed/paperless-gpt:v0.29.0
+    image: ghcr.io/icereed/paperless-gpt:v0.31.0
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
@@ -208,7 +208,7 @@ services:
       LLM_PROVIDER: "ollama"
       LLM_MODEL: ${TEXT_OLLAMA_MODEL:?TEXT_OLLAMA_MODEL is not set}
       OLLAMA_HOST: "http://ollama:11434"
-      OLLAMA_CONTEXT_LENGTH: "8192" # Sets Ollama NumCtx (context window)
+      OLLAMA_CONTEXT_LENGTH: "10240" # Sets Ollama NumCtx (context window)
       TOKEN_LIMIT: 1000 # Recommended for smaller models
 
       LLM_LANGUAGE: "English" # Optional, default: English
@@ -232,6 +232,7 @@ services:
       - pngx-net
     volumes:
       - ${PAPERLESS_DATA_DIR}/paperless-gpt/prompts:/app/prompts
+      - ${PAPERLESS_DATA_DIR}/paperless-gpt/config:/app/config
     labels:
       wud.tag.include: '^v\d+\.\d+\.\d+$$'
       wud.link.template: 'https://github.com/icereed/paperless-gpt/releases/tag/v$${major}.$${minor}.$${patch}'
