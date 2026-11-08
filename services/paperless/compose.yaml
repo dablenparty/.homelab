@@ -9,7 +9,7 @@ networks:
 # TODO: make example.env
 services:
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:3.4.1
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.4.2
     container_name: paperless-ngx
     hostname: paperless-ngx
     restart: unless-stopped
