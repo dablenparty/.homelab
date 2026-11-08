@@ -9,7 +9,7 @@ networks:
 
 services:
   router:
-    image: ghcr.io/itzg/mc-router:1.51.0
+    image: ghcr.io/itzg/mc-router:1.55.0
     restart: unless-stopped
     environment:
       MAPPING: |
