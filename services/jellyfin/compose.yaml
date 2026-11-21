@@ -6,7 +6,7 @@ networks:
 
 services:
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50
+    image: lscr.io/linuxserver/jellyfin:12.4ubu2604-ls59
     container_name: jellyfin
     restart: unless-stopped
     runtime: nvidia
@@ -42,7 +42,7 @@ services:
       # - start with amd64, arm64, amd64v8, or arm64v8
       # - contain "latest" or "nightly"
       # - end with an lsio version identifier (e.g. ls305)
-      wud.tag.exclude: '^((20\d{2}\.?\d{1,2}\.?\d{1,2})|((amd|arm)64(v8)?-)?((latest|nightly|unstable)-?)?(version-)?(\d+(\.\d+\.\d+)?((-(amd|arm)64(v8)?)?\.(\d+-?)+))?)$$'
+      # wud.tag.exclude: '^((20\d{2}\.?\d{1,2}\.?\d{1,2})|((amd|arm)64(v8)?-)?((latest|nightly|unstable)-?)?(version-)?(\d+(\.\d+\.\d+)?((-(amd|arm)64(v8)?)?\.(\d+-?)+))?)$$'
       # extract the major, minor, and patch from the allowable patterns, e.g.:
       # - version-10.11.0ubu2404
       # - version-10.11.0
@@ -65,3 +65,5 @@ services:
     #   - 8096:8096
     #   - 7359:7359/udp
     #   - 1900:1900/udp
+    tmpfs:
+      - /${JELLYFIN_CONFIG_DIR}/cache/transcodes:size=8G,mode=1770,uid=1000,gid=1000
