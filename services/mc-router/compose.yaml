@@ -15,6 +15,7 @@ services:
       MAPPING: |
         tekxit4.${BASE_DOMAIN:?BASE_DOMAIN is not set}=tekxit-lazy-mc:25565
         craftoria.${BASE_DOMAIN:?BASE_DOMAIN is not set}=craftoria-lazymc:25565
+        cobblemon.${BASE_DOMAIN:?BASE_DOMAIN is not set}=cobblemon-lazymc:25565
     networks:
       mc-net:
         ipv4_address: 10.64.0.4
