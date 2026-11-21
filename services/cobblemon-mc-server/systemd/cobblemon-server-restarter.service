@@ -1,0 +1,13 @@
+[Unit]
+Description=cobblemon Server Restarter
+Wants=docker.target
+After=docker.target
+
+[Service]
+Type=exec
+Restart=on-failure
+ExecStart=/home/hunterd/dotfiles/homelab/services/cobblemon-mc-server/systemd/cobblemon-server-restarter.zsh
+EnvironmentFile=/home/hunterd/dotfiles/homelab/services/cobblemon-mc-server/systemd/cobblemon-server-restarter.env
+
+[Install]
+WantedBy=multi-user.target
